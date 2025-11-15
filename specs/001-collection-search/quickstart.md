@@ -17,18 +17,18 @@
 
 ```bash
 # On your computer, clone or download the built .love file
-wget https://github.com/jellydn/muos-collection-manager.love
+wget https://github.com/jellydn/game-vault-manager.love
 
 # Or build from source:
-cd muos-collection-manager/
-zip -r muos-collection-manager.love . -x "*.git*" -x "tests/*"
+cd game-vault-manager/
+zip -r game-vault-manager.love . -x "*.git*" -x "tests/*"
 ```
 
 ### 2. Copy to muOS Device
 
 ```bash
 # Via SSH (if enabled on muOS)
-scp muos-collection-manager.love root@[DEVICE_IP]:/mnt/mmc/MUOS/application/
+scp game-vault-manager.love root@[DEVICE_IP]:/mnt/mmc/MUOS/application/
 
 # Or via SD card:
 # 1. Eject SD card from device
@@ -246,21 +246,21 @@ The app will automatically:
 
 ```bash
 # Clone repository
-git clone https://github.com/jellydn/muos-collection-manager.git
-cd muos-collection-manager/
+git clone https://github.com/jellydn/game-vault-manager.git
+cd game-vault-manager/
 
 # Run tests (optional)
 busted tests/
 
 # Package as .love file
-zip -r muos-collection-manager.love . \
+zip -r game-vault-manager.love . \
   -x "*.git*" \
   -x "tests/*" \
   -x "*.md" \
   -x "specs/*"
 
 # Test locally with Love2D
-love muos-collection-manager.love
+love game-vault-manager.love
 ```
 
 ---
@@ -273,7 +273,7 @@ love muos-collection-manager.love
 
 **Need Help?** Check `/specs/001-collection-search/` for full technical documentation.
 
-**Report Issues**: [GitHub Issues](https://github.com/jellydn/muos-collection-manager/issues)
+**Report Issues**: [GitHub Issues](https://github.com/jellydn/game-vault-manager/issues)
 
 ---
 

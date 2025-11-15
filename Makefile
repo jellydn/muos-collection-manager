@@ -1,10 +1,10 @@
 # Makefile for muOS Collection Manager
 
 # Project configuration
-PROJECT_NAME := muos-collection
+PROJECT_NAME := game-vault
 VERSION := $(shell git describe --tags --exact-match 2>/dev/null || echo 0.1.0)
 DIST_NAME := $(PROJECT_NAME)-$(VERSION)
-CONTENT_DIR := muOS-Collection
+CONTENT_DIR := GameVault
 DIST_DIR := dist
 ZIP_FILE := $(DIST_DIR)/$(DIST_NAME).muxapp
 DISTIGNORE := .distignore
@@ -32,11 +32,11 @@ dist:
 	# Create glyph directory for muOS launcher icon
 	@mkdir -p $(DIST_DIR)/glyph/muxapp
 	@if [ -f "assets/icon.png" ]; then \
-		cp assets/icon.png $(DIST_DIR)/glyph/muos-collection.png; \
+		cp assets/icon.png $(DIST_DIR)/glyph/game-vault.png; \
 	elif [ -f "assets/images/icons/app.png" ]; then \
-		cp assets/images/icons/app.png $(DIST_DIR)/glyph/muos-collection.png; \
+		cp assets/images/icons/app.png $(DIST_DIR)/glyph/game-vault.png; \
 	elif [ -f "assets/images/icons/icon.png" ]; then \
-		cp assets/images/icons/icon.png $(DIST_DIR)/glyph/muos-collection.png; \
+		cp assets/images/icons/icon.png $(DIST_DIR)/glyph/game-vault.png; \
 	else \
 		echo "Warning: app icon not found (expected assets/icon.png or assets/images/icons/{app.png,icon.png}), skipping icon"; \
 	fi

@@ -79,7 +79,7 @@ specs/001-collection-search/
 ### Source Code (repository root)
 
 ```text
-muos-collection-manager/      # Love2D application root
+game-vault-manager/      # Love2D application root
 ├── main.lua                  # Entry point (love.load, love.update, love.draw)
 ├── conf.lua                  # Love2D configuration (window, modules, identity)
 ├── game.conf                 # muOS-specific config

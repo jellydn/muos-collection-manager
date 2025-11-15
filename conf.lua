@@ -2,7 +2,8 @@
 -- Constitution: I. Performance-First, II. Resource Efficiency
 
 function love.conf(t)
-    t.identity = "muos-collection-manager"
+    -- Basic app identity
+    t.identity = "gamevault"
     t.version = "11.5"
     t.console = false
     t.accelerometerjoystick = false

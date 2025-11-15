@@ -20,9 +20,9 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 
 ### Installation Steps
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/muos-collection-manager/releases)
+1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/game-vault-manager/releases)
 
-   - File: `muos-collection-<version>.muxapp`
+   - File: `game-vault-<version>.muxapp`
 
 2. **Copy to SD Card**
 
@@ -33,7 +33,7 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
    - On your device, open the muOS Archive Manager app
    - Navigate to the `.muxapp` file
    - Select it and choose "Extract"
-   - The app will be installed to `/MUOS/application/muOS-Collection/`
+   - The app will be installed to `/MUOS/application/GameVault/`
 
 4. **Launch**
    - Find "muOS Collection Manager" in your Applications menu
@@ -43,8 +43,8 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 
 ```bash
 # Clone repository
-git clone https://github.com/jellydn/muos-collection-manager.git
-cd muos-collection-manager
+git clone https://github.com/jellydn/game-vault-manager.git
+cd game-vault-manager
 
 # Build .muxapp package
 make dist
@@ -104,7 +104,7 @@ On first launch, the app will:
 ## File Locations
 
 - **Collections**: `~/.config/muos/collections/collections.json`
-- **Metadata Cache**: `~/.cache/muos-collection-manager/metadata_cache.json`
+- **Metadata Cache**: `~/.cache/game-vault-manager/metadata_cache.json`
 - **Settings**: `~/.config/muos/collections/settings.json`
 - **ROM Directories**: `/mnt/mmc/ROMS/<SYSTEM>/`
 
@@ -124,7 +124,7 @@ Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 
 - Verify muOS firmware is 2405+ (Beans or later)
 - Check Love2D is installed: `love --version`
-- Check file permissions: `chmod +x muos-collection-manager.love`
+- Check file permissions: `chmod +x game-vault-manager.love`
 
 ### No games found
 
@@ -150,14 +150,14 @@ Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 
 ```bash
 # Clone repository
-git clone https://github.com/jellydn/muos-collection-manager.git
-cd muos-collection-manager
+git clone https://github.com/jellydn/game-vault-manager.git
+cd game-vault-manager
 
 # Run with Love2D
 love .
 
 # Package for muOS
-zip -r muos-collection-manager.love . -x ".*" "tests/*" "specs/*"
+zip -r game-vault-manager.love . -x ".*" "tests/*" "specs/*"
 ```
 
 ### Running Tests
@@ -192,7 +192,7 @@ Contributions welcome! Please:
 
 ## Support
 
-- Issues: https://github.com/jellydn/muos-collection-manager/issues
+- Issues: https://github.com/jellydn/game-vault-manager/issues
 - muOS Discord: https://muos.dev/
 - Love2D Forums: https://love2d.org/forums/
 

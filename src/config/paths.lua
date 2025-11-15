@@ -9,8 +9,8 @@ local muos_roms = os.getenv("MUOS_ROMS_PATH") or "/mnt/mmc/ROMS"
 
 -- muOS user data directory (follows XDG Base Directory spec)
 Paths.config_dir = home .. "/.config/muos/collections/"
-Paths.data_dir = home .. "/.local/share/muos-collection-manager/"
-Paths.cache_dir = home .. "/.cache/muos-collection-manager/"
+Paths.data_dir = home .. "/.local/share/gamevault/"
+Paths.cache_dir = home .. "/.cache/gamevault/"
 
 -- Collection data files
 Paths.collections_file = Paths.config_dir .. "collections.json"

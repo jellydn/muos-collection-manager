@@ -1,6 +1,6 @@
 #!/bin/bash
 # HELP: muOS Collection Manager
-# ICON: muos-collection
+# ICON: game-vault
 # GRID: Collections
 
 . /opt/muos/script/var/func.sh
@@ -8,7 +8,7 @@
 echo app >/tmp/act_go
 
 # Define paths and commands
-LOVEDIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/application/muOS-Collection"
+LOVEDIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/application/GameVault"
 GPTOKEYB="$(GET_VAR "device" "storage/rom/mount")/MUOS/emulator/gptokeyb/gptokeyb2.armhf"
 CONFDIR="$LOVEDIR/data/"
 LOGDIR="${CONFDIR}/log"
@@ -23,7 +23,7 @@ export XDG_DATA_HOME="$CONFDIR"
 cd "$LOVEDIR" || exit
 SET_VAR "system" "foreground_process" "love"
 export LD_LIBRARY_PATH="$LOVEDIR/libs:$LD_LIBRARY_PATH"
-LOGFILE="${LOGDIR}/muos-collection-launch.log"
+LOGFILE="${LOGDIR}/game-vault-launch.log"
 echo "[DEBUG] Running as user: $(whoami)" >>"$LOGFILE"
 
 # Find Love2D binary (check multiple locations)
