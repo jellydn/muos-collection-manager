@@ -65,20 +65,20 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Create SearchIndex model in src/models/search_index.lua (lowercase indexing)
-- [ ] T017 [P] [US1] Create SearchEngine service in src/services/search_engine.lua (case-insensitive partial matching)
-- [ ] T018 [US1] Implement SearchIndex.build() to create lowercase title index from game list
-- [ ] T019 [US1] Implement SearchEngine.query() with debouncing (150ms delay per research.md)
-- [ ] T020 [P] [US1] Create SearchBar UI component in src/ui/search_bar.lua (input field, debounce timer)
-- [ ] T021 [P] [US1] Create OnScreenKeyboard widget in src/ui/keyboard.lua (D-pad navigation)
-- [ ] T022 [P] [US1] Create GameGrid component in src/ui/game_grid.lua (virtual scrolling renderer)
-- [ ] T023 [US1] Create SearchScene in src/scenes/search_scene.lua (integrates SearchBar + GameGrid)
-- [ ] T024 [US1] Implement SearchScene:update() to call SearchEngine with debounced query
-- [ ] T025 [US1] Implement GameGrid virtual scrolling (viewport culling per research.md)
-- [ ] T026 [US1] Add "No games found" message handling in SearchScene
-- [ ] T027 [US1] Add loading indicator for searches >100ms (per FR-008)
-- [ ] T028 [US1] Handle special characters in search (parentheses, hyphens, apostrophes)
-- [ ] T029 [US1] Add logging for search operations (query, result count, time)
+- [X] T016 [P] [US1] Create SearchIndex model in src/models/search_index.lua (lowercase indexing)
+- [X] T017 [P] [US1] Create SearchEngine service in src/services/search_engine.lua (case-insensitive partial matching)
+- [X] T018 [US1] Implement SearchIndex.build() to create lowercase title index from game list
+- [X] T019 [US1] Implement SearchEngine.query() with debouncing (150ms delay per research.md)
+- [X] T020 [P] [US1] Create SearchBar UI component in src/ui/search_bar.lua (input field, debounce timer)
+- [X] T021 [P] [US1] Create OnScreenKeyboard widget in src/ui/keyboard.lua (D-pad navigation)
+- [X] T022 [P] [US1] Create GameGrid component in src/ui/game_grid.lua (virtual scrolling renderer)
+- [X] T023 [US1] Create SearchScene in src/scenes/search_scene.lua (integrates SearchBar + GameGrid)
+- [X] T024 [US1] Implement SearchScene:update() to call SearchEngine with debounced query
+- [X] T025 [US1] Implement GameGrid virtual scrolling (viewport culling per research.md)
+- [X] T026 [US1] Add "No games found" message handling in SearchScene
+- [X] T027 [US1] Add loading indicator for searches >100ms (per FR-008)
+- [X] T028 [US1] Handle special characters in search (parentheses, hyphens, apostrophes)
+- [X] T029 [US1] Add logging for search operations (query, result count, time)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 

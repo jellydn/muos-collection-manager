@@ -7,6 +7,7 @@ local DisplayConfig = require("src.config.display_config")
 local InputHandler = require("src.ui.input_handler")
 local SceneManager = require("src.scenes.scene_manager")
 local GameLibrary = require("src.services.game_library")
+local SearchEngine = require("src.services.search_engine")
 
 -- Global state
 local app = {
@@ -42,12 +43,15 @@ function love.load()
     local load_time = (love.timer.getTime() - start_time) * 1000
     Logger.info(string.format("Library loaded: %d games in %.2fms", #GameLibrary.games, load_time))
     
-    -- TODO: Register scenes
-    -- SceneManager.register("menu", require("src.scenes.menu_scene"))
-    -- SceneManager.register("search", require("src.scenes.search_scene"))
+    -- Initialize search engine
+    Logger.info("Initializing search engine...")
+    SearchEngine.init(GameLibrary.games)
     
-    -- TODO: Start with menu scene
-    -- SceneManager.switch("menu")
+    -- Register scenes
+    SceneManager.register("search", require("src.scenes.search_scene"))
+    
+    -- Start with search scene
+    SceneManager.switch("search")
     
     Logger.info("Application initialized successfully")
 end
