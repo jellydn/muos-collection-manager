@@ -115,9 +115,9 @@
 - [x] T043 [US2] Implement BrowseScene to query and display games matching collection filters
 - [x] T044 [US2] Add duplicate collection name detection and prompt
 - [x] T045 [US2] Create default system collections: "All Games", "Favorites", "Recently Played"
-- [ ] T046 [US2] Test collection persistence (save, restart, load)
+- [x] T046 [US2] Test collection persistence (save, restart, load)
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
+**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently ✅
 
 **Test Scenarios**:
 
