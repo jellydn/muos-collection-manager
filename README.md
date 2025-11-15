@@ -42,6 +42,7 @@ chmod +x muos-collection-manager.love
 ### First Run
 
 On first launch, the app will:
+
 1. Scan your ROM directories (`/mnt/mmc/ROMS/`)
 2. Extract game metadata from filenames
 3. Build search index (may take 10-30 seconds for large libraries)
@@ -49,17 +50,17 @@ On first launch, the app will:
 
 ### Controls
 
-| Button | Action |
-|--------|--------|
-| D-Pad | Navigate menus and lists |
-| A | Confirm/Select |
-| B | Back/Cancel |
-| X | Delete collection (with confirmation) |
-| Y | Toggle favorite on selected game |
-| L | Open filter panel (in search scene) |
-| R | Toggle AND/OR filter mode |
-| START | Open menu / Save as collection |
-| SELECT | Quick filter menu |
+| Button | Action                                |
+| ------ | ------------------------------------- |
+| D-Pad  | Navigate menus and lists              |
+| A      | Confirm/Select                        |
+| B      | Back/Cancel                           |
+| X      | Delete collection (with confirmation) |
+| Y      | Toggle favorite on selected game      |
+| L      | Open filter panel (in search scene)   |
+| R      | Toggle AND/OR filter mode             |
+| START  | Open menu / Save as collection        |
+| SELECT | Quick filter menu                     |
 
 ### Searching for Games
 
@@ -94,7 +95,7 @@ On first launch, the app will:
 Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 
 | Library Size | Search Time | Memory Usage | FPS |
-|--------------|-------------|--------------|-----|
+| ------------ | ----------- | ------------ | --- |
 | 1,000 games  | <100ms      | ~5MB         | 60  |
 | 5,000 games  | <300ms      | ~8MB         | 60  |
 | 10,000 games | <500ms      | ~10MB        | 60  |
@@ -102,21 +103,25 @@ Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 ## Troubleshooting
 
 ### App won't launch
+
 - Verify muOS firmware is 2405+ (Beans or later)
 - Check Love2D is installed: `love --version`
 - Check file permissions: `chmod +x muos-collection-manager.love`
 
 ### No games found
+
 - Verify ROM directories exist: `ls /mnt/mmc/ROMS/`
 - Check ROM file extensions are supported (see File Locations)
 - Re-scan library from Settings menu
 
 ### Search is slow
+
 - First search builds index (one-time cost)
 - Subsequent searches should be <100-500ms
 - Check memory usage isn't hitting 256MB limit
 
 ### Collections not saving
+
 - Check directory permissions: `~/.config/muos/collections/`
 - Verify disk space available: `df -h`
 - Check logs for JSON write errors
@@ -161,6 +166,7 @@ MIT License - See [LICENSE](LICENSE) for details
 ## Contributing
 
 Contributions welcome! Please:
+
 1. Follow the [Constitution](.specify/memory/constitution.md) principles
 2. Maintain 60 FPS performance
 3. Test on actual muOS hardware

@@ -2,7 +2,7 @@
 -- Constitution: II. Resource Efficiency (optimized for embedded displays)
 
 local DisplayConfig = {}
-
+-- TODO: Support TrimUI Brick and Smart Pro devices
 -- Common muOS display resolutions
 DisplayConfig.RESOLUTIONS = {
     RG35XX = {width = 640, height = 480, aspect = "4:3"},
@@ -46,7 +46,7 @@ DisplayConfig.COLORS = {
 function DisplayConfig.init()
     DisplayConfig.width = love.graphics.getWidth()
     DisplayConfig.height = love.graphics.getHeight()
-    
+
     -- Calculate aspect ratio
     local ratio = DisplayConfig.width / DisplayConfig.height
     if math.abs(ratio - 4/3) < 0.01 then
@@ -56,10 +56,10 @@ function DisplayConfig.init()
     else
         DisplayConfig.aspect_ratio = string.format("%.2f:1", ratio)
     end
-    
+
     -- Calculate scale factor (relative to 640×480 baseline)
     DisplayConfig.scale = DisplayConfig.width / 640
-    
+
     -- Scale UI elements
     for key, value in pairs(DisplayConfig.SIZES) do
         DisplayConfig.SIZES[key] = math.floor(value * DisplayConfig.scale)

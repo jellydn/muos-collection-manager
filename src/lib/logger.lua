@@ -24,7 +24,7 @@ local function log(level, level_name, ...)
     if level < Logger.current_level then
         return
     end
-    
+
     local args = {...}
     local message = table.concat(args, " ")
     print(string.format("[%s] %s: %s", format_time(), level_name, message))
@@ -52,9 +52,9 @@ function Logger.profile(name, func)
     local start_time = love.timer.getTime()
     local result = {func()}
     local elapsed = (love.timer.getTime() - start_time) * 1000  -- Convert to ms
-    
+
     Logger.debug(string.format("PROFILE [%s]: %.2fms", name, elapsed))
-    
+
     return table.unpack(result)
 end
 

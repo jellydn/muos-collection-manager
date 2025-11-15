@@ -28,14 +28,14 @@
 
 **Purpose**: Project initialization and Love2D configuration
 
-- [X] T001 Create Love2D project structure with main.lua, conf.lua, src/, assets/, tests/
-- [X] T002 Configure conf.lua with window settings for muOS (320×240 to 640×480 support)
-- [X] T003 [P] Add json.lua library to src/lib/json.lua
-- [X] T004 [P] Create logger.lua utility in src/lib/logger.lua
-- [X] T005 [P] Create input_config.lua in src/config/input_config.lua (muOS D-pad mappings)
-- [X] T006 [P] Create display_config.lua in src/config/display_config.lua (aspect ratio handling)
-- [X] T007 [P] Create paths.lua in src/config/paths.lua (muOS directory paths)
-- [X] T008 Create README.md with installation instructions for muOS
+- [x] T001 Create Love2D project structure with main.lua, conf.lua, src/, assets/, tests/
+- [x] T002 Configure conf.lua with window settings for muOS (320×240 to 640×480 support)
+- [x] T003 [P] Add json.lua library to src/lib/json.lua
+- [x] T004 [P] Create logger.lua utility in src/lib/logger.lua
+- [x] T005 [P] Create input_config.lua in src/config/input_config.lua (muOS D-pad mappings)
+- [x] T006 [P] Create display_config.lua in src/config/display_config.lua (aspect ratio handling)
+- [x] T007 [P] Create paths.lua in src/config/paths.lua (muOS directory paths)
+- [x] T008 Create README.md with installation instructions for muOS
 
 ---
 
@@ -45,13 +45,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T009 Create SceneManager in src/scenes/scene_manager.lua (scene transitions, state management)
-- [ ] T010 [P] Create Game model in src/models/game.lua (entity with validation)
-- [ ] T011 [P] Create GameLibrary service in src/services/game_library.lua (ROM scanning, metadata extraction)
-- [ ] T012 Create main.lua with love.load(), love.update(), love.draw() calling SceneManager
-- [ ] T013 [P] Create InputHandler in src/ui/input_handler.lua (controller abstraction, button mapping)
-- [ ] T014 [P] Create muOS directory structure creation in main.lua (~/.config/muos/collections/)
-- [ ] T015 Test: Verify app launches and scans test ROM directory (10-20 dummy files)
+- [X] T009 Create SceneManager in src/scenes/scene_manager.lua (scene transitions, state management)
+- [X] T010 [P] Create Game model in src/models/game.lua (entity with validation)
+- [X] T011 [P] Create GameLibrary service in src/services/game_library.lua (ROM scanning, metadata extraction)
+- [X] T012 Create main.lua with love.load(), love.update(), love.draw() calling SceneManager
+- [X] T013 [P] Create InputHandler in src/ui/input_handler.lua (controller abstraction, button mapping)
+- [X] T014 [P] Create muOS directory structure creation in main.lua (~/.config/muos/collections/)
+- [X] T015 Test: Verify app launches and scans test ROM directory (10-20 dummy files)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

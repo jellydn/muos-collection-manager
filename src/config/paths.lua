@@ -94,17 +94,17 @@ end
 function Paths.is_rom_file(filename, system)
     local ext = Paths.get_extension(filename):lower()
     local extensions = Paths.rom_extensions[system:upper()]
-    
+
     if not extensions then
         return false
     end
-    
+
     for _, valid_ext in ipairs(extensions) do
         if ext == valid_ext then
             return true
         end
     end
-    
+
     return false
 end
 
