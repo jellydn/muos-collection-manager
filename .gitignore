@@ -1,0 +1,17 @@
+# Build artifacts
+dist/
+*.muxapp
+*.zip
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+*.swo
+*~

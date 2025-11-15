@@ -1,24 +1,31 @@
-# muOS Collection Manager Distribution Ignore
+# muOS Collection Manager Distribution Ignore (rsync --exclude-from)
 
-# Git
+# VCS and CI
 
 .git/
 .gitignore
+.github/
 
-# Development
+# Development and specs (exclude from packaged app)
 
 tests/
 specs/
 .specify/
 .vscode/
-\*.md
-!README.md
+doc/
+docs/
 
 # Build artifacts
 
 dist/
 _.zip
 _.muxapp
+.distignore
+
+# Root-only dev files not needed on device
+
+Makefile
+run-test.sh
 
 # Temporary files
 
@@ -34,7 +41,7 @@ _.swo
 .AppleDouble
 .LSOverride
 
-# Thumbnails
+# Thumbnails/metadata
 
 .\_\*
 
@@ -42,8 +49,3 @@ _.swo
 
 /tmp/
 _.test._
-
-# Documentation
-
-doc/
-docs/
