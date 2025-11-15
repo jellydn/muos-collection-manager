@@ -15,27 +15,42 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 ### Requirements
 
 - muOS firmware version 2405+ (Beans or later)
-- Love2D 11.4+ (typically pre-installed on muOS)
+- Supported devices: RG35XX, Anbernic handhelds, TrimUI devices
+- ~10MB storage space for application
 
-### Method 1: Via SSH
+### Installation Steps
+
+1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/muos-collection-manager/releases)
+   - File: `muos-collection-<version>.muxapp`
+
+2. **Copy to SD Card**
+   - Place the `.muxapp` file in the `/ARCHIVE` folder on your SD1 card
+
+3. **Extract with Archive Manager**
+   - On your device, open the muOS Archive Manager app
+   - Navigate to the `.muxapp` file
+   - Select it and choose "Extract"
+   - The app will be installed to `/MUOS/application/muOS-Collection/`
+
+4. **Launch**
+   - Find "muOS Collection Manager" in your Applications menu
+   - Select to launch
+
+### Building from Source (Advanced)
 
 ```bash
-# Connect to your device via SSH
-ssh root@<device-ip>
+# Clone repository
+git clone https://github.com/jellydn/muos-collection-manager.git
+cd muos-collection-manager
 
-# Download the latest release
-cd /opt/muos/extra/
-wget https://github.com/jellydn/muos-collection-manager/releases/latest/download/muos-collection-manager.love
+# Build .muxapp package
+make dist
 
-# Make it executable (if needed)
-chmod +x muos-collection-manager.love
+# Deploy to device over network (optional)
+make deploy DEVICE_IP=192.168.1.100
 ```
 
-### Method 2: Via SD Card
-
-1. Download `muos-collection-manager.love` from [Releases](https://github.com/jellydn/muos-collection-manager/releases)
-2. Copy to your device's SD card: `/opt/muos/extra/`
-3. Restart your device or refresh the application list
+The build process creates a `.muxapp` file in the `dist/` directory.
 
 ## Usage
 

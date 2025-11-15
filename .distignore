@@ -1,0 +1,41 @@
+# muOS Collection Manager Distribution Ignore
+
+# Git
+.git/
+.gitignore
+
+# Development
+tests/
+specs/
+.specify/
+.vscode/
+*.md
+!README.md
+
+# Build artifacts
+dist/
+*.zip
+*.muxapp
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Test data
+/tmp/
+*.test.*
+
+# Documentation
+doc/
+docs/
