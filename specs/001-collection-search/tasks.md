@@ -99,22 +99,22 @@
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Create Collection model in src/models/collection.lua (with validation rules)
-- [ ] T031 [P] [US2] Create Persistence service in src/services/persistence.lua (JSON save/load with atomic write)
-- [ ] T032 [P] [US2] Create CollectionManager service in src/services/collection_manager.lua (CRUD operations)
-- [ ] T033 [US2] Implement Collection validation (name length 1-50 chars, no duplicates)
-- [ ] T034 [US2] Implement Persistence.save() with atomic write pattern (temp file + rename per research.md) and version field ("1.0")
-- [ ] T035 [US2] Implement Persistence.load() with error handling for corrupted data and schema version migration (see data-model.md)
-- [ ] T036 [US2] Implement CollectionManager.create() to save collection with current search criteria
-- [ ] T037 [US2] Implement CollectionManager.delete() with confirmation (non-system collections only)
-- [ ] T038 [P] [US2] Create CreateCollectionScene in src/scenes/create_scene.lua (name input, save button)
-- [ ] T039 [P] [US2] Create MenuScene in src/scenes/menu_scene.lua (list collections, navigation)
-- [ ] T040 [P] [US2] Create BrowseScene in src/scenes/browse_scene.lua (display collection games)
-- [ ] T041 [US2] Add "Save as Collection" option to SearchScene (START button per quickstart.md)
-- [ ] T042 [US2] Implement MenuScene to load and display all collections (system + custom)
-- [ ] T043 [US2] Implement BrowseScene to query and display games matching collection filters
-- [ ] T044 [US2] Add duplicate collection name detection and prompt
-- [ ] T045 [US2] Create default system collections: "All Games", "Favorites", "Recently Played"
+- [x] T030 [P] [US2] Create Collection model in src/models/collection.lua (with validation rules)
+- [x] T031 [P] [US2] Create Persistence service in src/services/persistence.lua (JSON save/load with atomic write)
+- [x] T032 [P] [US2] Create CollectionManager service in src/services/collection_manager.lua (CRUD operations)
+- [x] T033 [US2] Implement Collection validation (name length 1-50 chars, no duplicates)
+- [x] T034 [US2] Implement Persistence.save() with atomic write pattern (temp file + rename per research.md) and version field ("1.0")
+- [x] T035 [US2] Implement Persistence.load() with error handling for corrupted data and schema version migration (see data-model.md)
+- [x] T036 [US2] Implement CollectionManager.create() to save collection with current search criteria
+- [x] T037 [US2] Implement CollectionManager.delete() with confirmation (non-system collections only)
+- [x] T038 [P] [US2] Create CreateCollectionScene in src/scenes/create_scene.lua (name input, save button)
+- [x] T039 [P] [US2] Create MenuScene in src/scenes/menu_scene.lua (list collections, navigation)
+- [x] T040 [P] [US2] Create BrowseScene in src/scenes/browse_scene.lua (display collection games)
+- [x] T041 [US2] Add "Save as Collection" option to SearchScene (START button per quickstart.md)
+- [x] T042 [US2] Implement MenuScene to load and display all collections (system + custom)
+- [x] T043 [US2] Implement BrowseScene to query and display games matching collection filters
+- [x] T044 [US2] Add duplicate collection name detection and prompt
+- [x] T045 [US2] Create default system collections: "All Games", "Favorites", "Recently Played"
 - [ ] T046 [US2] Test collection persistence (save, restart, load)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently

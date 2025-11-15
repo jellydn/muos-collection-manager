@@ -8,6 +8,7 @@ local InputHandler = require("src.ui.input_handler")
 local SceneManager = require("src.scenes.scene_manager")
 local GameLibrary = require("src.services.game_library")
 local SearchEngine = require("src.services.search_engine")
+local CollectionManager = require("src.services.collection_manager")
 
 -- Global state
 local app = {
@@ -52,8 +53,15 @@ function love.load()
     Logger.info("Initializing search engine...")
     SearchEngine.init(GameLibrary.games)
 
+    -- Initialize collection manager
+    Logger.info("Initializing collection manager...")
+    CollectionManager.init()
+
     -- Register scenes
     SceneManager.register("search", require("src.scenes.search_scene"))
+    SceneManager.register("create_collection", require("src.scenes.create_collection_scene"))
+    SceneManager.register("menu", require("src.scenes.menu_scene"))
+    SceneManager.register("browse", require("src.scenes.browse_scene"))
 
     -- Start with search scene
     SceneManager.switch("search")

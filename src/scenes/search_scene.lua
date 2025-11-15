@@ -122,7 +122,11 @@ function SearchScene.draw()
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    love.graphics.print("SELECT: Toggle Keyboard | START: Menu | ESC: Quit", DisplayConfig.SIZES.margin, help_y)
+    if SearchScene.keyboard_mode then
+        love.graphics.print("SELECT: Hide Keyboard | START: Collections Menu", DisplayConfig.SIZES.margin, help_y)
+    else
+        love.graphics.print("SELECT: Show Keyboard | START: Save Collection", DisplayConfig.SIZES.margin, help_y)
+    end
 end
 
 -- Handle keyboard input
@@ -152,7 +156,22 @@ end
 
 -- Handle logical action
 function SearchScene.handle_action(action)
-    if action == "filter" then
+    if action == "menu" then
+        -- Open menu or save collection (START button)
+        if SearchScene.keyboard_mode then
+            -- If keyboard is open, switch to menu
+            SceneManager.switch_with_fade("menu")
+        else
+            -- If browsing games, save current search as collection
+            local query = SearchScene.search_bar:get_query()
+            local filters = {}
+            if query and query ~= "" then
+                filters = {{filter_type = "name", operator = "contains", value = query}}
+            end
+            SceneManager.switch_with_fade("create_collection", {filters = filters})
+        end
+
+    elseif action == "filter" then
         -- Toggle keyboard with SELECT button
         SearchScene.keyboard:toggle()
         SearchScene.keyboard_mode = SearchScene.keyboard:is_visible()
