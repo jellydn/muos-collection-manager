@@ -21,12 +21,15 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 ### Installation Steps
 
 1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/muos-collection-manager/releases)
+
    - File: `muos-collection-<version>.muxapp`
 
 2. **Copy to SD Card**
+
    - Place the `.muxapp` file in the `/ARCHIVE` folder on your SD1 card
 
 3. **Extract with Archive Manager**
+
    - On your device, open the muOS Archive Manager app
    - Navigate to the `.muxapp` file
    - Select it and choose "Extract"

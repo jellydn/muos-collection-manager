@@ -22,13 +22,13 @@ dist:
 	@echo "Version: $(VERSION)"
 	@rm -rf $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)
-	
+
 	# Copy files excluding ignored patterns
 	@rsync -a . $(DIST_DIR)/$(CONTENT_DIR) \
 		--exclude-from=$(DISTIGNORE) \
 		--exclude=$(DIST_DIR) \
 		--delete-excluded
-	
+
 	# Create glyph directory for muOS launcher icon
 	@mkdir -p $(DIST_DIR)/glyph/muxapp
 	@if [ -f "assets/icon.png" ]; then \
@@ -36,7 +36,7 @@ dist:
 	else \
 		echo "Warning: assets/icon.png not found, skipping icon"; \
 	fi
-	
+
 	# Create .muxapp archive (muOS application format)
 	@cd $(DIST_DIR) && zip -r $(DIST_NAME).muxapp .
 	@rm -rf $(DIST_DIR)/$(CONTENT_DIR) $(DIST_DIR)/glyph
