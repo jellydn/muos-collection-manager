@@ -33,8 +33,12 @@ dist:
 	@mkdir -p $(DIST_DIR)/glyph/muxapp
 	@if [ -f "assets/icon.png" ]; then \
 		cp assets/icon.png $(DIST_DIR)/glyph/muos-collection.png; \
+	elif [ -f "assets/images/icons/app.png" ]; then \
+		cp assets/images/icons/app.png $(DIST_DIR)/glyph/muos-collection.png; \
+	elif [ -f "assets/images/icons/icon.png" ]; then \
+		cp assets/images/icons/icon.png $(DIST_DIR)/glyph/muos-collection.png; \
 	else \
-		echo "Warning: assets/icon.png not found, skipping icon"; \
+		echo "Warning: app icon not found (expected assets/icon.png or assets/images/icons/{app.png,icon.png}), skipping icon"; \
 	fi
 
 	# Create .muxapp archive (muOS application format)
