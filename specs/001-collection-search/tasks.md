@@ -136,23 +136,23 @@
 
 ### Implementation for User Story 3
 
-- [ ] T047 [P] [US3] Create SearchFilter model in src/models/search_filter.lua (with validation per data-model.md)
-- [ ] T048 [P] [US3] Create FilterEngine service in src/services/filter_engine.lua (multi-criteria filtering)
-- [ ] T049 [US3] Implement SearchFilter validation (filter_type, operator, value combinations)
-- [ ] T050 [US3] Implement FilterEngine.applyFilters() with AND logic (intersection of results)
-- [ ] T051 [US3] Implement FilterEngine.applyFilters() with OR logic (union of results)
-- [ ] T052 [US3] Add genre filter support (equals operator)
-- [ ] T053 [US3] Add year filter support (equals, range, gte, lte operators)
-- [ ] T054 [US3] Add player count filter support (equals, gte, lte operators)
-- [ ] T055 [US3] Add favorite flag filter support (equals operator)
-- [ ] T056 [P] [US3] Create FilterPanel UI component in src/ui/filter_panel.lua (add/remove filters)
-- [ ] T057 [P] [US3] Add genre dropdown widget to FilterPanel
-- [ ] T058 [P] [US3] Add year range input widget to FilterPanel
-- [ ] T059 [P] [US3] Add player count input widget to FilterPanel
-- [ ] T060 [US3] Add AND/OR toggle button to FilterPanel (R button per quickstart.md)
-- [ ] T061 [US3] Integrate FilterPanel into SearchScene (L button to open per quickstart.md)
-- [ ] T062 [US3] Update SearchScene to combine name search with active filters
-- [ ] T063 [US3] Update CollectionManager to save multi-filter collections
+- [x] T047 [P] [US3] Create SearchFilter model in src/models/search_filter.lua (with validation per data-model.md)
+- [x] T048 [P] [US3] Create FilterEngine service in src/services/filter_engine.lua (multi-criteria filtering)
+- [x] T049 [US3] Implement SearchFilter validation (filter_type, operator, value combinations)
+- [x] T050 [US3] Implement FilterEngine.applyFilters() with AND logic (intersection of results)
+- [x] T051 [US3] Implement FilterEngine.applyFilters() with OR logic (union of results)
+- [x] T052 [US3] Add genre filter support (equals operator)
+- [x] T053 [US3] Add year filter support (equals, range, gte, lte operators)
+- [x] T054 [US3] Add player count filter support (equals, gte, lte operators)
+- [x] T055 [US3] Add favorite flag filter support (equals operator)
+- [x] T056 [P] [US3] Create FilterPanel UI component in src/ui/filter_panel.lua (add/remove filters)
+- [x] T057 [P] [US3] Add genre dropdown widget to FilterPanel
+- [x] T058 [P] [US3] Add year range input widget to FilterPanel
+- [x] T059 [P] [US3] Add player count input widget to FilterPanel
+- [x] T060 [US3] Add AND/OR toggle button to FilterPanel (R button per quickstart.md)
+- [x] T061 [US3] Integrate FilterPanel into SearchScene (L button to open per quickstart.md)
+- [x] T062 [US3] Update SearchScene to combine name search with active filters
+- [x] T063 [US3] Update CollectionManager to save multi-filter collections
 - [ ] T064 [US3] Handle edge case: 500+ matching games with virtual scrolling
 
 **Checkpoint**: All user stories should now be independently functional
