@@ -153,11 +153,10 @@ function SearchScene.draw()
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    if SearchScene.keyboard_mode then
-        love.graphics.print("SELECT: Hide Keyboard | START: Collections Menu", DisplayConfig.SIZES.margin, help_y)
-    else
-        love.graphics.print("SELECT: Show Keyboard | START: Save Collection", DisplayConfig.SIZES.margin, help_y)
-    end
+    local kb_hint = SearchScene.keyboard_mode and "SELECT: Hide Keyboard" or "SELECT: Show Keyboard"
+    local coll_hint = SearchScene.keyboard_mode and "START: Collections Menu" or "START: Save Collection"
+    local filter_hint = "L: Filters  R: AND/OR"
+    love.graphics.print(kb_hint .. " | " .. coll_hint .. " | " .. filter_hint, DisplayConfig.SIZES.margin, help_y)
 end
 
 -- Handle keyboard input
