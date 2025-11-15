@@ -1,0 +1,70 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Collection",
+	"description": "A saved dynamic collection with filter criteria",
+	"type": "object",
+	"required": [
+		"id",
+		"name",
+		"filters",
+		"filter_mode",
+		"created_at",
+		"is_system"
+	],
+	"properties": {
+		"id": {
+			"type": "string",
+			"description": "Unique identifier (UUID)"
+		},
+		"name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 50,
+			"description": "User-defined collection name"
+		},
+		"filters": {
+			"type": "array",
+			"items": {
+				"$ref": "filter-schema.json"
+			},
+			"default": [],
+			"description": "Array of search filter criteria"
+		},
+		"filter_mode": {
+			"type": "string",
+			"enum": [
+				"AND",
+				"OR"
+			],
+			"default": "AND",
+			"description": "Boolean logic for combining filters"
+		},
+		"created_at": {
+			"type": "integer",
+			"description": "Unix timestamp of creation"
+		},
+		"is_system": {
+			"type": "boolean",
+			"description": "True for built-in collections (cannot be deleted)"
+		},
+		"icon": {
+			"type": [
+				"string",
+				"null"
+			],
+			"description": "Optional icon name for UI display"
+		},
+		"sort_order": {
+			"type": "string",
+			"enum": [
+				"title_asc",
+				"title_desc",
+				"year_asc",
+				"year_desc",
+				"recent"
+			],
+			"default": "title_asc",
+			"description": "Sort order for games in collection"
+		}
+	}
+}

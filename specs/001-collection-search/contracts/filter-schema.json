@@ -1,0 +1,167 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "SearchFilter",
+	"description": "A single filter criterion for collection queries",
+	"type": "object",
+	"required": [
+		"filter_type",
+		"operator",
+		"value"
+	],
+	"properties": {
+		"filter_type": {
+			"type": "string",
+			"enum": [
+				"name",
+				"genre",
+				"year",
+				"players",
+				"favorite"
+			],
+			"description": "Type of filter to apply"
+		},
+		"operator": {
+			"type": "string",
+			"enum": [
+				"contains",
+				"equals",
+				"range",
+				"gte",
+				"lte"
+			],
+			"description": "Comparison operator"
+		},
+		"value": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "number"
+				},
+				{
+					"type": "boolean"
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "number"
+					},
+					"minItems": 2,
+					"maxItems": 2,
+					"description": "Range values [min, max] for range operator"
+				}
+			],
+			"description": "Filter value (type depends on filter_type and operator)"
+		}
+	},
+	"allOf": [
+		{
+			"if": {
+				"properties": {
+					"filter_type": {
+						"const": "name"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"operator": {
+						"enum": [
+							"contains"
+						]
+					},
+					"value": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"filter_type": {
+						"const": "genre"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"operator": {
+						"enum": [
+							"equals"
+						]
+					},
+					"value": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"filter_type": {
+						"const": "year"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"operator": {
+						"enum": [
+							"equals",
+							"range",
+							"gte",
+							"lte"
+						]
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"filter_type": {
+						"const": "players"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"operator": {
+						"enum": [
+							"equals",
+							"gte",
+							"lte"
+						]
+					},
+					"value": {
+						"type": "number"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"filter_type": {
+						"const": "favorite"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"operator": {
+						"enum": [
+							"equals"
+						]
+					},
+					"value": {
+						"type": "boolean"
+					}
+				}
+			}
+		}
+	]
+}
