@@ -28,14 +28,14 @@
 
 **Purpose**: Project initialization and Love2D configuration
 
-- [ ] T001 Create Love2D project structure with main.lua, conf.lua, src/, assets/, tests/
-- [ ] T002 Configure conf.lua with window settings for muOS (320×240 to 640×480 support)
-- [ ] T003 [P] Add json.lua library to src/lib/json.lua
-- [ ] T004 [P] Create logger.lua utility in src/lib/logger.lua
-- [ ] T005 [P] Create input_config.lua in src/config/input_config.lua (muOS D-pad mappings)
-- [ ] T006 [P] Create display_config.lua in src/config/display_config.lua (aspect ratio handling)
-- [ ] T007 [P] Create paths.lua in src/config/paths.lua (muOS directory paths)
-- [ ] T008 Create README.md with installation instructions for muOS
+- [X] T001 Create Love2D project structure with main.lua, conf.lua, src/, assets/, tests/
+- [X] T002 Configure conf.lua with window settings for muOS (320×240 to 640×480 support)
+- [X] T003 [P] Add json.lua library to src/lib/json.lua
+- [X] T004 [P] Create logger.lua utility in src/lib/logger.lua
+- [X] T005 [P] Create input_config.lua in src/config/input_config.lua (muOS D-pad mappings)
+- [X] T006 [P] Create display_config.lua in src/config/display_config.lua (aspect ratio handling)
+- [X] T007 [P] Create paths.lua in src/config/paths.lua (muOS directory paths)
+- [X] T008 Create README.md with installation instructions for muOS
 
 ---
 
