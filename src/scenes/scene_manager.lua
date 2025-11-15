@@ -31,22 +31,22 @@ function SceneManager.switch(name, data)
         Logger.error("Scene not found:", name)
         return false
     end
-    
+
     Logger.info("Switching scene to:", name)
-    
+
     -- Call exit on current scene
     if SceneManager.current_scene and SceneManager.current_scene.exit then
         SceneManager.current_scene:exit()
     end
-    
+
     -- Set new scene
     SceneManager.current_scene = SceneManager.scenes[name]
-    
+
     -- Call enter on new scene with optional data
     if SceneManager.current_scene.enter then
         SceneManager.current_scene:enter(data or {})
     end
-    
+
     return true
 end
 
@@ -56,13 +56,13 @@ function SceneManager.switch_with_fade(name, data)
         Logger.error("Scene not found:", name)
         return false
     end
-    
+
     SceneManager.transition.active = true
     SceneManager.transition.from_scene = SceneManager.current_scene
     SceneManager.transition.to_scene = name
     SceneManager.transition.to_scene_data = data
     SceneManager.transition.elapsed = 0
-    
+
     return true
 end
 
@@ -71,9 +71,9 @@ function SceneManager.update(dt)
     -- Handle scene transition
     if SceneManager.transition.active then
         SceneManager.transition.elapsed = SceneManager.transition.elapsed + dt
-        
+
         local progress = SceneManager.transition.elapsed / SceneManager.transition.duration
-        
+
         if progress < 0.5 then
             -- Fade out
             local alpha = progress * 2
@@ -84,18 +84,18 @@ function SceneManager.update(dt)
                 SceneManager.switch(SceneManager.transition.to_scene, SceneManager.transition.to_scene_data)
                 SceneManager.transition.from_scene = nil
             end
-            
+
             -- Fade in
             local alpha = 1 - ((progress - 0.5) * 2)
             SceneManager.transition.fade_color[4] = alpha
         end
-        
+
         if progress >= 1.0 then
             SceneManager.transition.active = false
             SceneManager.transition.fade_color[4] = 0
         end
     end
-    
+
     -- Update current scene
     if SceneManager.current_scene and SceneManager.current_scene.update then
         SceneManager.current_scene:update(dt)
@@ -107,7 +107,7 @@ function SceneManager.draw()
     if SceneManager.current_scene and SceneManager.current_scene.draw then
         SceneManager.current_scene:draw()
     end
-    
+
     -- Draw fade overlay if transitioning
     if SceneManager.transition.active and SceneManager.transition.fade_color[4] > 0 then
         love.graphics.setColor(SceneManager.transition.fade_color)

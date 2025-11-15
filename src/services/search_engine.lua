@@ -17,10 +17,10 @@ SearchEngine.last_results = {}
 -- Initialize with game library
 function SearchEngine.init(games)
     Logger.info("Initializing search engine with", #games, "games")
-    
+
     SearchEngine.index = SearchIndex.new()
     SearchEngine.index:build(games)
-    
+
     local memory = SearchEngine.index:get_memory_usage()
     Logger.info(string.format("Search index memory: %.2f MB", memory / 1024 / 1024))
 end
@@ -31,20 +31,20 @@ function SearchEngine.search(query)
         Logger.error("SearchEngine not initialized")
         return {}
     end
-    
+
     if not query or query == "" then
         return SearchEngine.index.all_games
     end
-    
+
     local start_time = love.timer.getTime()
     local query_lower = query:lower()
     local results = {}
     local seen = {}  -- Prevent duplicates
-    
+
     -- Search through all games (linear scan with early filtering)
     for _, game in ipairs(SearchEngine.index.all_games) do
         local title_lower = game.title:lower()
-        
+
         -- Partial match using string.find (plain text, not pattern)
         if title_lower:find(query_lower, 1, true) then
             if not seen[game.id] then
@@ -53,30 +53,30 @@ function SearchEngine.search(query)
             end
         end
     end
-    
+
     local elapsed = (love.timer.getTime() - start_time) * 1000
     Logger.debug(string.format("Search '%s': %d results in %.2fms", query, #results, elapsed))
-    
+
     -- Performance warning if search is slow
     if elapsed > 100 and #SearchEngine.index.all_games >= 1000 then
         Logger.warn(string.format("Search took %.2fms (>100ms threshold)", elapsed))
     end
-    
+
     return results
 end
 
 -- Query with debouncing (call this from UI update loop)
 function SearchEngine.query(query, dt)
     SearchEngine.pending_query = query or ""
-    
+
     -- Reset timer if query changed
     if query ~= SearchEngine.last_query then
         SearchEngine.debounce_timer = 0
     end
-    
+
     -- Increment timer
     SearchEngine.debounce_timer = SearchEngine.debounce_timer + (dt or 0)
-    
+
     -- Execute search after debounce delay
     if SearchEngine.debounce_timer >= SearchEngine.debounce_delay then
         if SearchEngine.pending_query ~= SearchEngine.last_query then
@@ -85,7 +85,7 @@ function SearchEngine.query(query, dt)
         end
         return SearchEngine.last_results
     end
-    
+
     -- Return last results while debouncing
     return SearchEngine.last_results
 end

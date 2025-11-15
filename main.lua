@@ -16,6 +16,11 @@ local app = {
         frames = 0,
         elapsed = 0,
         current_fps = 0
+    },
+    memory_usage = {
+        last_check = 0,
+        current_mb = 0,
+        peak_mb = 0
     }
 }
 
@@ -23,36 +28,36 @@ local app = {
 function love.load()
     Logger.info("muOS Collection Manager v" .. app.version)
     Logger.info("Love2D version:", love.getVersion())
-    
+
     -- Initialize configurations
     DisplayConfig.init()
     Logger.info(string.format("Display: %dx%d (%s)", DisplayConfig.width, DisplayConfig.height, DisplayConfig.aspect_ratio))
-    
+
     -- Initialize paths (create directories if needed)
     Paths.init()
     Logger.info("Config directory:", Paths.config_dir)
-    
+
     -- Initialize input handler
     InputHandler.init()
     Logger.info("Input handler initialized")
-    
+
     -- Load game library
     Logger.info("Loading game library...")
     local start_time = love.timer.getTime()
     GameLibrary.load()
     local load_time = (love.timer.getTime() - start_time) * 1000
     Logger.info(string.format("Library loaded: %d games in %.2fms", #GameLibrary.games, load_time))
-    
+
     -- Initialize search engine
     Logger.info("Initializing search engine...")
     SearchEngine.init(GameLibrary.games)
-    
+
     -- Register scenes
     SceneManager.register("search", require("src.scenes.search_scene"))
-    
+
     -- Start with search scene
     SceneManager.switch("search")
-    
+
     Logger.info("Application initialized successfully")
 end
 
@@ -71,6 +76,19 @@ function love.update(dt)
         if app.fps_counter.current_fps < 60 then
             Logger.warn(string.format("FPS drop: %d (target: 60)", app.fps_counter.current_fps))
         end
+        
+        -- Update memory usage stats
+        local mem_kb = collectgarbage("count")
+        app.memory_usage.current_mb = mem_kb / 1024
+        if app.memory_usage.current_mb > app.memory_usage.peak_mb then
+            app.memory_usage.peak_mb = app.memory_usage.current_mb
+        end
+        
+        -- Log memory warning if approaching limit (>200MB)
+        if app.memory_usage.current_mb > 200 then
+            Logger.warn(string.format("Memory usage: %.2f MB (peak: %.2f MB)", 
+                app.memory_usage.current_mb, app.memory_usage.peak_mb))
+        end
     end
     
     -- Update input handler (for repeat)
@@ -78,23 +96,23 @@ function love.update(dt)
     
     -- Update scene manager
     SceneManager.update(dt)
-end
-
--- Love2D: Draw loop
+end-- Love2D: Draw loop
 function love.draw()
     -- Clear with background color
     love.graphics.clear(DisplayConfig.COLORS.background)
-    
+
     -- Draw current scene
     SceneManager.draw()
-    
-    -- Draw FPS counter (debug)
+
+    -- Draw FPS counter and stats (debug)
     if Logger.current_level == Logger.LEVEL.DEBUG then
         love.graphics.setColor(DisplayConfig.COLORS.text)
         love.graphics.print(string.format("FPS: %d", app.fps_counter.current_fps), 10, 10)
         love.graphics.print(string.format("Games: %d", #GameLibrary.games), 10, 30)
+        love.graphics.print(string.format("Memory: %.2f MB (peak: %.2f MB)", 
+            app.memory_usage.current_mb, app.memory_usage.peak_mb), 10, 50)
     end
-    
+
     -- Reset color
     love.graphics.setColor(1, 1, 1, 1)
 end
@@ -106,7 +124,7 @@ function love.keypressed(key, scancode, isrepeat)
         love.event.quit()
         return
     end
-    
+
     -- Toggle debug mode
     if key == "f1" then
         if Logger.current_level == Logger.LEVEL.DEBUG then
@@ -118,10 +136,10 @@ function love.keypressed(key, scancode, isrepeat)
         end
         return
     end
-    
+
     -- Forward to input handler
     InputHandler.keypressed(key, scancode, isrepeat)
-    
+
     -- Forward to scene manager
     SceneManager.keypressed(key, scancode, isrepeat)
 end

@@ -45,13 +45,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T009 Create SceneManager in src/scenes/scene_manager.lua (scene transitions, state management)
-- [X] T010 [P] Create Game model in src/models/game.lua (entity with validation)
-- [X] T011 [P] Create GameLibrary service in src/services/game_library.lua (ROM scanning, metadata extraction)
-- [X] T012 Create main.lua with love.load(), love.update(), love.draw() calling SceneManager
-- [X] T013 [P] Create InputHandler in src/ui/input_handler.lua (controller abstraction, button mapping)
-- [X] T014 [P] Create muOS directory structure creation in main.lua (~/.config/muos/collections/)
-- [X] T015 Test: Verify app launches and scans test ROM directory (10-20 dummy files)
+- [x] T009 Create SceneManager in src/scenes/scene_manager.lua (scene transitions, state management)
+- [x] T010 [P] Create Game model in src/models/game.lua (entity with validation)
+- [x] T011 [P] Create GameLibrary service in src/services/game_library.lua (ROM scanning, metadata extraction)
+- [x] T012 Create main.lua with love.load(), love.update(), love.draw() calling SceneManager
+- [x] T013 [P] Create InputHandler in src/ui/input_handler.lua (controller abstraction, button mapping)
+- [x] T014 [P] Create muOS directory structure creation in main.lua (~/.config/muos/collections/)
+- [x] T015 Test: Verify app launches and scans test ROM directory (10-20 dummy files)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -65,20 +65,20 @@
 
 ### Implementation for User Story 1
 
-- [X] T016 [P] [US1] Create SearchIndex model in src/models/search_index.lua (lowercase indexing)
-- [X] T017 [P] [US1] Create SearchEngine service in src/services/search_engine.lua (case-insensitive partial matching)
-- [X] T018 [US1] Implement SearchIndex.build() to create lowercase title index from game list
-- [X] T019 [US1] Implement SearchEngine.query() with debouncing (150ms delay per research.md)
-- [X] T020 [P] [US1] Create SearchBar UI component in src/ui/search_bar.lua (input field, debounce timer)
-- [X] T021 [P] [US1] Create OnScreenKeyboard widget in src/ui/keyboard.lua (D-pad navigation)
-- [X] T022 [P] [US1] Create GameGrid component in src/ui/game_grid.lua (virtual scrolling renderer)
-- [X] T023 [US1] Create SearchScene in src/scenes/search_scene.lua (integrates SearchBar + GameGrid)
-- [X] T024 [US1] Implement SearchScene:update() to call SearchEngine with debounced query
-- [X] T025 [US1] Implement GameGrid virtual scrolling (viewport culling per research.md)
-- [X] T026 [US1] Add "No games found" message handling in SearchScene
-- [X] T027 [US1] Add loading indicator for searches >100ms (per FR-008)
-- [X] T028 [US1] Handle special characters in search (parentheses, hyphens, apostrophes)
-- [X] T029 [US1] Add logging for search operations (query, result count, time)
+- [x] T016 [P] [US1] Create SearchIndex model in src/models/search_index.lua (lowercase indexing)
+- [x] T017 [P] [US1] Create SearchEngine service in src/services/search_engine.lua (case-insensitive partial matching)
+- [x] T018 [US1] Implement SearchIndex.build() to create lowercase title index from game list
+- [x] T019 [US1] Implement SearchEngine.query() with debouncing (150ms delay per research.md)
+- [x] T020 [P] [US1] Create SearchBar UI component in src/ui/search_bar.lua (input field, debounce timer)
+- [x] T021 [P] [US1] Create OnScreenKeyboard widget in src/ui/keyboard.lua (D-pad navigation)
+- [x] T022 [P] [US1] Create GameGrid component in src/ui/game_grid.lua (virtual scrolling renderer)
+- [x] T023 [US1] Create SearchScene in src/scenes/search_scene.lua (integrates SearchBar + GameGrid)
+- [x] T024 [US1] Implement SearchScene:update() to call SearchEngine with debounced query
+- [x] T025 [US1] Implement GameGrid virtual scrolling (viewport culling per research.md)
+- [x] T026 [US1] Add "No games found" message handling in SearchScene
+- [x] T027 [US1] Add loading indicator for searches >100ms (per FR-008)
+- [x] T028 [US1] Handle special characters in search (parentheses, hyphens, apostrophes)
+- [x] T029 [US1] Add logging for search operations (query, result count, time)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 

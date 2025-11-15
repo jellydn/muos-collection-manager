@@ -44,71 +44,71 @@ function InputHandler.is_repeating(action)
     if not InputHandler.actions[action] then
         return false
     end
-    
+
     local timer = InputHandler.action_timers[action]
-    
+
     if timer > InputHandler.repeat_delay then
         -- After initial delay, check repeat rate
         local time_since_delay = timer - InputHandler.repeat_delay
         return (time_since_delay % InputHandler.repeat_rate) < 0.016  -- ~1 frame tolerance
     end
-    
+
     return false
 end
 
 -- Handle keyboard press
 function InputHandler.keypressed(key, scancode, isrepeat)
     local action = InputConfig.get_keyboard_action(key)
-    
+
     if action then
         InputHandler.actions[action] = true
         InputHandler.action_timers[action] = 0
         Logger.debug("Key pressed:", key, "->", action)
         return action
     end
-    
+
     return nil
 end
 
 -- Handle keyboard release
 function InputHandler.keyreleased(key, scancode)
     local action = InputConfig.get_keyboard_action(key)
-    
+
     if action then
         InputHandler.actions[action] = false
         InputHandler.action_timers[action] = 0
         Logger.debug("Key released:", key, "->", action)
         return action
     end
-    
+
     return nil
 end
 
 -- Handle gamepad button press
 function InputHandler.gamepadpressed(joystick, button)
     local action = InputConfig.get_gamepad_action(button)
-    
+
     if action then
         InputHandler.actions[action] = true
         InputHandler.action_timers[action] = 0
         Logger.debug("Gamepad pressed:", button, "->", action)
         return action
     end
-    
+
     return nil
 end
 
 -- Handle gamepad button release
 function InputHandler.gamepadreleased(joystick, button)
     local action = InputConfig.get_gamepad_action(button)
-    
+
     if action then
         InputHandler.actions[action] = false
         InputHandler.action_timers[action] = 0
         Logger.debug("Gamepad released:", button, "->", action)
         return action
     end
-    
+
     return nil
 end
 
