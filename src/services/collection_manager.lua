@@ -17,7 +17,7 @@ CollectionManager.collections_file = nil  -- Will be set during init
 -- @param collections_file string: Path to collections.json (optional, defaults to muOS path)
 -- @return boolean, error
 function CollectionManager.init(collections_file)
-    CollectionManager.collections_file = collections_file or (Paths.COLLECTIONS_DIR .. "/collections.json")
+    CollectionManager.collections_file = collections_file or (Paths.config_dir .. "collections.json")
 
     Logger.info("Initializing CollectionManager with file:", CollectionManager.collections_file)
 
