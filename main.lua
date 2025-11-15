@@ -66,34 +66,34 @@ function love.update(dt)
     -- Update FPS counter
     app.fps_counter.frames = app.fps_counter.frames + 1
     app.fps_counter.elapsed = app.fps_counter.elapsed + dt
-    
+
     if app.fps_counter.elapsed >= 1.0 then
         app.fps_counter.current_fps = app.fps_counter.frames
         app.fps_counter.frames = 0
         app.fps_counter.elapsed = 0
-        
+
         -- Log FPS warning if below 60
         if app.fps_counter.current_fps < 60 then
             Logger.warn(string.format("FPS drop: %d (target: 60)", app.fps_counter.current_fps))
         end
-        
+
         -- Update memory usage stats
         local mem_kb = collectgarbage("count")
         app.memory_usage.current_mb = mem_kb / 1024
         if app.memory_usage.current_mb > app.memory_usage.peak_mb then
             app.memory_usage.peak_mb = app.memory_usage.current_mb
         end
-        
+
         -- Log memory warning if approaching limit (>200MB)
         if app.memory_usage.current_mb > 200 then
-            Logger.warn(string.format("Memory usage: %.2f MB (peak: %.2f MB)", 
+            Logger.warn(string.format("Memory usage: %.2f MB (peak: %.2f MB)",
                 app.memory_usage.current_mb, app.memory_usage.peak_mb))
         end
     end
-    
+
     -- Update input handler (for repeat)
     InputHandler.update(dt)
-    
+
     -- Update scene manager
     SceneManager.update(dt)
 end-- Love2D: Draw loop
@@ -109,7 +109,7 @@ function love.draw()
         love.graphics.setColor(DisplayConfig.COLORS.text)
         love.graphics.print(string.format("FPS: %d", app.fps_counter.current_fps), 10, 10)
         love.graphics.print(string.format("Games: %d", #GameLibrary.games), 10, 30)
-        love.graphics.print(string.format("Memory: %.2f MB (peak: %.2f MB)", 
+        love.graphics.print(string.format("Memory: %.2f MB (peak: %.2f MB)",
             app.memory_usage.current_mb, app.memory_usage.peak_mb), 10, 50)
     end
 

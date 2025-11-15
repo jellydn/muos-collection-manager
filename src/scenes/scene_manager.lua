@@ -98,14 +98,14 @@ function SceneManager.update(dt)
 
     -- Update current scene
     if SceneManager.current_scene and SceneManager.current_scene.update then
-        SceneManager.current_scene:update(dt)
+        SceneManager.current_scene.update(dt)
     end
 end
 
 -- Draw current scene
 function SceneManager.draw()
     if SceneManager.current_scene and SceneManager.current_scene.draw then
-        SceneManager.current_scene:draw()
+        SceneManager.current_scene.draw()
     end
 
     -- Draw fade overlay if transitioning
@@ -119,25 +119,25 @@ end
 -- Forward input events to current scene
 function SceneManager.keypressed(key, scancode, isrepeat)
     if SceneManager.current_scene and SceneManager.current_scene.keypressed then
-        SceneManager.current_scene:keypressed(key, scancode, isrepeat)
+        SceneManager.current_scene.keypressed(key, scancode, isrepeat)
     end
 end
 
 function SceneManager.keyreleased(key, scancode)
     if SceneManager.current_scene and SceneManager.current_scene.keyreleased then
-        SceneManager.current_scene:keyreleased(key, scancode)
+        SceneManager.current_scene.keyreleased(key, scancode)
     end
 end
 
 function SceneManager.gamepadpressed(joystick, button)
     if SceneManager.current_scene and SceneManager.current_scene.gamepadpressed then
-        SceneManager.current_scene:gamepadpressed(joystick, button)
+        SceneManager.current_scene.gamepadpressed(joystick, button)
     end
 end
 
 function SceneManager.gamepadreleased(joystick, button)
     if SceneManager.current_scene and SceneManager.current_scene.gamepadreleased then
-        SceneManager.current_scene:gamepadreleased(joystick, button)
+        SceneManager.current_scene.gamepadreleased(joystick, button)
     end
 end
 

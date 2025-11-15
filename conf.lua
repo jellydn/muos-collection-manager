@@ -3,7 +3,7 @@
 
 function love.conf(t)
     t.identity = "muos-collection-manager"
-    t.version = "1.0"
+    t.version = "11.5"
     t.console = false
     t.accelerometerjoystick = false
     t.externalstorage = false

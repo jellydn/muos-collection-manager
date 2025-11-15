@@ -79,7 +79,7 @@ function SearchScene.update(dt)
 
     -- Execute debounced search
     local query = SearchScene.search_bar:get_query()
-    SearchScene.search_results = SearchEngine.query(query, dt)
+    SearchScene.search_results = SearchEngine.query(query)
 
     -- Show loading indicator if search is taking >100ms
     if SearchEngine.is_debouncing() then
