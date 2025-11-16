@@ -179,6 +179,8 @@ function MenuScene.handle_action(action)
 
     elseif action == "delete" then
         -- Delete collection (X button)
+        Logger.debug("Delete action triggered, dialog state:", MenuScene.delete_dialog and "exists" or "nil",
+                     MenuScene.delete_dialog and MenuScene.delete_dialog.is_open or "n/a")
         MenuScene.delete_selected_collection()
 
     elseif action == "menu" or action == "filter" then
@@ -189,11 +191,15 @@ end
 
 -- Delete selected collection
 function MenuScene.delete_selected_collection()
+    Logger.debug("delete_selected_collection called, selected_index:", MenuScene.selected_index)
     local collection = MenuScene.collections[MenuScene.selected_index]
 
     if not collection then
+        Logger.warn("No collection at index:", MenuScene.selected_index)
         return
     end
+
+    Logger.debug("Attempting to delete collection:", collection.name, "id:", collection.id, "can_delete:", collection:can_delete())
 
     if not collection:can_delete() then
         Logger.warn("Cannot delete system collection:", collection.name)
@@ -201,34 +207,39 @@ function MenuScene.delete_selected_collection()
     end
 
     -- Show confirmation dialog
+    Logger.debug("Creating delete dialog for:", collection.name)
     MenuScene.delete_dialog = Dialog.new({
         title = "Delete Collection",
         message = "Delete '" .. collection.name .. "'?\nThis cannot be undone.",
         type = Dialog.TYPE.CONFIRM,
         options = {"Yes", "No"},
         callback = function(choice)
+            Logger.debug("Delete dialog callback - choice:", choice)
             if choice == "yes" then
                 local ok, err = CollectionManager.delete(collection.id)
-                
+
                 if not ok then
                     Logger.error("Failed to delete collection:", err)
-                    MenuScene.delete_dialog = nil
-                    return
-                end
-                
-                Logger.info("Deleted collection:", collection.name)
-                
-                -- Reload collections
-                MenuScene.collections = CollectionManager.get_sorted()
-                
-                -- Adjust selection
-                if MenuScene.selected_index > #MenuScene.collections then
-                    MenuScene.selected_index = math.max(1, #MenuScene.collections)
+                else
+                    Logger.info("Deleted collection:", collection.name)
+
+                    -- Reload collections
+                    MenuScene.collections = CollectionManager.get_sorted()
+                    Logger.debug("Reloaded collections, new count:", #MenuScene.collections)
+
+                    -- Adjust selection
+                    if MenuScene.selected_index > #MenuScene.collections then
+                        MenuScene.selected_index = math.max(1, #MenuScene.collections)
+                        Logger.debug("Adjusted selected_index to:", MenuScene.selected_index)
+                    end
                 end
             end
+            -- Clear dialog reference after processing
+            Logger.debug("Clearing delete_dialog reference")
             MenuScene.delete_dialog = nil
         end
     })
+    Logger.debug("Opening delete dialog")
     MenuScene.delete_dialog:open()
 end
 
