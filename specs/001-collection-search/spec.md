@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-collection-search`
 **Created**: 2025-11-15
-**Status**: Draft
+**Status**: Complete
 **Input**: User description: "collection management by searching the game by name which is exactly https://knulli.org/configure/collections/#dynamic-collections"
 
 ## User Scenarios & Testing _(mandatory)_
@@ -41,19 +41,20 @@ Players can create named collections based on search criteria and save them for 
 
 ---
 
-### User Story 3 - Multiple Search Filters (Priority: P3)
+### User Story 3 - muOS Integration (Priority: P3)
 
-Players can combine multiple search criteria including game name, genre tags, year, and player count to create precise collections. Filters can be combined with AND/OR logic.
+Players can view playtime statistics from muOS tracking and export collections to the native muOS launcher. Collections integrate seamlessly with the muOS ecosystem.
 
-**Why this priority**: Power users want more control than name-only search. This enables complex queries like "2-player games from 1990s" or "RPG OR Strategy games".
+**Why this priority**: Integration with muOS enhances the user experience by showing playtime data and allowing collections to be used across both the custom launcher and native muOS.
 
-**Independent Test**: Set filters for "genre: platformer" AND "players: 2" and verify only 2-player platformers appear.
+**Independent Test**: Create a collection, export it to muOS, verify it appears in muOS Collections menu and launches games correctly.
 
 **Acceptance Scenarios**:
 
-1. **Given** player adds filter "genre: RPG", **When** combined with name search "final", **Then** results show only RPG games with "final" in name
-2. **Given** player sets "year: 1985-1990", **When** filter applies, **Then** only games from that date range appear
-3. **Given** player toggles AND/OR operator, **When** switching between modes, **Then** results update to reflect logic change
+1. **Given** player has launched games from muOS, **When** viewing game info panel, **Then** playtime statistics are displayed
+2. **Given** player creates a custom collection, **When** exporting to muOS, **Then** collection appears in muOS Collections menu
+3. **Given** player views Recently Played collection, **When** opening, **Then** games from muOS history are shown
+4. **Given** player exports a collection, **When** export succeeds, **Then** success dialog shows with instructions
 
 ---
 
@@ -84,19 +85,24 @@ Players can combine multiple search criteria including game name, genre tags, ye
 - **FR-007**: System MUST automatically update dynamic collections when new games are added to library
 - **FR-008**: System MUST provide visual feedback during search operations (loading indicator shown when search execution exceeds 100ms, measured from last keystroke to results rendered)
 - **FR-009**: System MUST allow players to delete custom collections (with confirmation prompt)
-- **FR-010**: System MUST support multiple filter criteria (name, genre, year, player count)
-- **FR-011**: System MUST allow combining filters with AND/OR boolean logic (toggle via dedicated button, see quickstart.md for device mappings)
-- **FR-012**: System MUST handle empty search results gracefully with informative message
-- **FR-013**: System MUST export collections to muOS-compatible format for integration with native launcher
-- **FR-014**: System MUST integrate with muOS muxcollect module for game launching (delegate to native system)
-- **FR-015**: System MUST support both muOS and TrimUI device architectures with appropriate display scaling
-- **FR-016**: System MUST allow players to delete individual games from library with confirmation dialog
-- **FR-017**: System MUST permanently delete ROM files when player confirms game deletion
-- **FR-018**: System MUST display box art thumbnails for games when available from muOS catalogue
-- **FR-019**: System MUST show success/error dialogs after collection export with clear next-step instructions
-- **FR-020**: System MUST convert ROM paths from /mnt/mmc/ROMS to /mnt/union/ROMS for muOS compatibility
-- **FR-021**: System MUST read muOS history to populate "Recently Played" system collection
-- **FR-022**: System MUST sync "Recently Played" with games launched from muOS History module
+- **FR-010**: System MUST support name-based search filtering for creating collections
+- **FR-011**: System MUST handle empty search results gracefully with informative message
+- **FR-012**: System MUST read and display muOS playtime tracking data (launches, total time, average time)
+- **FR-013**: System MUST use ASCII text labels instead of Unicode symbols for font compatibility
+- **FR-014**: System MUST automatically clean log files when they exceed 1000 lines
+- **FR-015**: System MUST export collections to muOS-compatible format for integration with native launcher
+- **FR-016**: System MUST integrate with muOS muxcollect module for game launching (delegate to native system)
+- **FR-017**: System MUST support both muOS and TrimUI device architectures with appropriate display scaling
+- **FR-018**: System MUST allow players to delete individual games from library with confirmation dialog
+- **FR-019**: System MUST permanently delete ROM files when player confirms game deletion
+- **FR-020**: System MUST display box art thumbnails for games when available from muOS catalogue
+- **FR-021**: System MUST use FileData fallback when direct image loading fails due to filesystem restrictions
+- **FR-022**: System MUST show success/error dialogs after collection export with clear next-step instructions
+- **FR-023**: System MUST convert ROM paths from /mnt/mmc/ROMS to /mnt/union/ROMS for muOS compatibility
+- **FR-024**: System MUST read muOS history to populate "Recently Played" system collection
+- **FR-025**: System MUST sync "Recently Played" with games launched from muOS History module
+- **FR-026**: System MUST handle text overflow in search bar by scrolling to show recent characters
+- **FR-027**: System MUST enforce minimum keyboard key size to prevent rendering crashes
 
 ### Key Entities
 

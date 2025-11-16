@@ -7,6 +7,10 @@ local InputHandler = require("src.ui.input_handler")
 local CollectionManager = require("src.services.collection_manager")
 local SceneManager = require("src.scenes.scene_manager")
 local Dialog = require("src.ui.dialog")
+local SearchEngine = require("src.services.search_engine")
+local GameLibrary = require("src.services.game_library")
+local FilterEngine = require("src.services.filter_engine")
+local SearchFilter = require("src.models.search_filter")
 
 local MenuScene = {}
 
@@ -16,6 +20,50 @@ MenuScene.selected_index = 1
 MenuScene.scroll_offset = 0
 MenuScene.item_height = 50
 MenuScene.delete_dialog = nil
+
+-- Get game count for a collection
+function MenuScene.get_collection_game_count(collection)
+    if collection.id == "all-games-system" then
+        return #SearchEngine.search("")
+    elseif collection.id == "favorites-system" then
+        return #GameLibrary.get_favorites()
+    elseif collection.id == "recent-system" then
+        local CollectionManager = require("src.services.collection_manager")
+        local history_entries = CollectionManager.read_muos_history()
+        return #history_entries
+    else
+        -- Custom collection - apply filters
+        if #collection.filters == 0 then
+            return #SearchEngine.search("")
+        else
+            local base_games = SearchEngine.search("")
+            local name_query = ""
+            local other_filters = {}
+
+            for _, f in ipairs(collection.filters) do
+                if f.filter_type == "name" then
+                    name_query = f.value or ""
+                else
+                    local filter_obj = SearchFilter.new(f)
+                    if filter_obj then
+                        table.insert(other_filters, filter_obj)
+                    end
+                end
+            end
+
+            if name_query ~= "" then
+                base_games = SearchEngine.search(name_query)
+            end
+
+            if #other_filters > 0 then
+                local filtered = FilterEngine.apply_filters(base_games, other_filters, collection.filter_mode or "AND")
+                return #filtered
+            else
+                return #base_games
+            end
+        end
+    end
+end
 
 -- Enter scene
 function MenuScene.enter(data)
@@ -100,11 +148,11 @@ function MenuScene.draw()
 
         love.graphics.print(name, margin + 10, y + 15)
 
-        -- Draw filter count
-        local filter_count = #collection.filters
-        local filter_text = filter_count .. " filter" .. (filter_count ~= 1 and "s" or "")
+        -- Draw game count
+        local game_count = MenuScene.get_collection_game_count(collection)
+        local count_text = game_count .. " game" .. (game_count ~= 1 and "s" or "")
         love.graphics.setColor(DisplayConfig.COLORS.text_dim)
-        love.graphics.print(filter_text, margin + 10, y + 30)
+        love.graphics.print(count_text, margin + 10, y + 30)
     end
 
     love.graphics.setScissor()
