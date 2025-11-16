@@ -1,4 +1,4 @@
-# Makefile for muOS Collection Manager
+# Makefile for Game Vault
 
 # Project configuration
 PROJECT_NAME := game-vault
@@ -81,7 +81,7 @@ deploy:
 
 # Show help
 help:
-	@echo "muOS Collection Manager - Build System"
+	@echo "Game Vault - Build System"
 	@echo ""
 	@echo "Targets:"
 	@echo "  make dist          - Create .muxapp distribution package"

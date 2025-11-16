@@ -5,9 +5,12 @@ dist/
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Editors
 .vscode/
+.idea/
+*.sublime-*
 
 # Logs and temp
 *.log
@@ -15,3 +18,16 @@ dist/
 *.swp
 *.swo
 *~
+
+# Love2D specific
+*.love
+.love-backup/
+
+# Test data
+test-roms/
+test-data/
+
+# Secrets
+.env
+.env.*
+!.env.example
