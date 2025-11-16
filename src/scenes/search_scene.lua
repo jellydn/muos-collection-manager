@@ -31,6 +31,7 @@ SearchScene.search_start_time = 0
 SearchScene.active_filters = {}
 SearchScene.filter_mode = "AND"
 SearchScene.filter_panel = nil
+SearchScene.show_info_panel = false
 
 -- Enter scene
 function SearchScene.enter(data)
@@ -190,19 +191,27 @@ function SearchScene.draw()
         SearchScene.filter_panel:draw()
     end
 
+    -- Draw game info panel if active
+    if SearchScene.show_info_panel then
+        local selected = SearchScene.game_grid and SearchScene.game_grid:get_selected()
+        if selected and SearchScene.game_grid then
+            SearchScene.game_grid:draw_info_panel(selected)
+        end
+    end
+
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    
+
     if SearchScene.keyboard_mode then
         local help_text = "SELECT: Hide Keyboard | A: Type | START: Menu"
         love.graphics.print(help_text, DisplayConfig.SIZES.margin, help_y)
-        
+
         -- Draw keyboard mode indicator
         love.graphics.setColor(DisplayConfig.COLORS.primary)
         love.graphics.print("[KEYBOARD MODE]", DisplayConfig.width - 150, help_y)
     else
-        local help_text = "B: Back | Y: Favorite | SELECT: Keyboard | START: Save Collection"
+        local help_text = "A: Info | B: Back | Y: Favorite | SELECT: Keyboard | START: Save Collection"
         love.graphics.print(help_text, DisplayConfig.SIZES.margin, help_y)
     end
 end
@@ -240,6 +249,14 @@ end
 
 -- Handle logical action
 function SearchScene.handle_action(action)
+    -- If info panel is open, close it on B button
+    if SearchScene.show_info_panel then
+        if action == "cancel" then
+            SearchScene.show_info_panel = false
+        end
+        return
+    end
+
     if action == "menu" then
         -- Open menu or save collection (START button)
         if SearchScene.keyboard_mode then
@@ -290,7 +307,7 @@ function SearchScene.handle_action(action)
         end
 
     elseif action == "confirm" then
-        -- Select key on keyboard or launch game
+        -- Select key on keyboard or show game info
         if SearchScene.keyboard_mode then
             local key = SearchScene.keyboard:get_selected_key()
             if key == "⌫" then
@@ -302,9 +319,12 @@ function SearchScene.handle_action(action)
                 SearchScene.search_bar:add_char(key)
             end
         else
-            -- Game selection - do nothing (games can only be launched from collections)
-            -- User should create a collection and export to muOS
-            Logger.info("Game selected in search. Create a collection to export to muOS.")
+            -- Show game info panel (A button)
+            local selected = SearchScene.game_grid and SearchScene.game_grid:get_selected()
+            if selected then
+                Logger.info("A pressed - opening info panel for:", selected.title)
+                SearchScene.show_info_panel = true
+            end
         end
 
     elseif action == "shoulder_l" then

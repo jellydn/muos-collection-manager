@@ -197,9 +197,9 @@ function BrowseScene.draw()
 
         local help_text
         if BrowseScene.collection and non_exportable[BrowseScene.collection.id] then
-            help_text = "B: Back | START: Info | X: Delete | Y: Favorite"
+            help_text = "A: Info | B: Back | X: Delete | Y: Favorite"
         else
-            help_text = "A: Export | B: Back | START: Info | X: Delete | Y: Favorite"
+            help_text = "A: Info | B: Back | START: Export | X: Delete | Y: Favorite"
         end
 
         love.graphics.print(help_text, DisplayConfig.SIZES.margin, help_y)
@@ -270,7 +270,19 @@ function BrowseScene.handle_action(action)
         end
 
     elseif action == "confirm" then
-        -- Export collection to muOS format
+        -- Show game info panel with box art (A button)
+        local selected = BrowseScene.game_grid and BrowseScene.game_grid:get_selected()
+        if selected then
+            Logger.info("A pressed - opening info panel for:", selected.title)
+            BrowseScene.show_info_panel = true
+        end
+
+    elseif action == "cancel" then
+        -- Go back to menu
+        SceneManager.switch_with_fade("menu")
+
+    elseif action == "menu" then
+        -- Export collection to muOS format (START button)
         -- Block export for dynamic system collections (All Games, Recently Played)
         local non_exportable = {
             ["all-games-system"] = true,
@@ -321,22 +333,6 @@ function BrowseScene.handle_action(action)
                 })
                 BrowseScene.export_dialog:open()
             end
-        end
-
-    elseif action == "cancel" then
-        -- Go back to menu
-        SceneManager.switch_with_fade("menu")
-
-    elseif action == "menu" then
-        -- Show game info panel with box art
-        local selected = BrowseScene.game_grid and BrowseScene.game_grid:get_selected()
-        if selected then
-            Logger.info("START pressed - opening info panel for:", selected.title)
-            BrowseScene.show_info_panel = true
-        else
-            -- If no game selected, go to menu
-            Logger.info("START pressed - no game selected, going to menu")
-            SceneManager.switch_with_fade("menu")
         end
 
     elseif action == "favorite" then
