@@ -36,7 +36,7 @@ function SceneManager.switch(name, data)
 
     -- Call exit on current scene
     if SceneManager.current_scene and SceneManager.current_scene.exit then
-        SceneManager.current_scene:exit()
+        SceneManager.current_scene.exit()
     end
 
     -- Set new scene
@@ -44,7 +44,19 @@ function SceneManager.switch(name, data)
 
     -- Call enter on new scene with optional data
     if SceneManager.current_scene.enter then
-        SceneManager.current_scene:enter(data or {})
+        Logger.info("Calling enter on scene:", name, "with data:", data and "yes" or "no")
+        if data and data.filters then
+            Logger.info("  -> filters count:", #data.filters)
+            for i, f in ipairs(data.filters) do
+                Logger.info("  -> filter", i, ":", f.filter_type, f.operator, f.value)
+            end
+        end
+        if data then
+            for k, v in pairs(data) do
+                Logger.info("  -> data key:", k, "=", type(v))
+            end
+        end
+        SceneManager.current_scene.enter(data or {})
     end
 
     return true

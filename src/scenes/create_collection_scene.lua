@@ -22,9 +22,15 @@ CreateCollectionScene.keyboard_mode = true
 -- @param data table: {filters = SearchFilter[]} - filters to save
 function CreateCollectionScene.enter(data)
     Logger.info("Entering CreateCollectionScene")
+    Logger.info("  -> data received:", data and "yes" or "no")
+    if data then
+        Logger.info("  -> data.filters:", data.filters and #data.filters or "nil")
+    end
 
     CreateCollectionScene.filters = (data and data.filters) or {}
     CreateCollectionScene.error_message = nil
+
+    Logger.info("CreateCollectionScene initialized with", #CreateCollectionScene.filters, "filters")
 
     -- Initialize UI components
     local margin = DisplayConfig.SIZES.margin
@@ -93,7 +99,11 @@ function CreateCollectionScene.draw()
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    love.graphics.print("A: Save | B: Cancel | SELECT: Toggle Keyboard", DisplayConfig.SIZES.margin, help_y)
+    if CreateCollectionScene.keyboard_mode then
+        love.graphics.print("A: Type | B: Cancel | SELECT: Hide Keyboard | START: Save", DisplayConfig.SIZES.margin, help_y)
+    else
+        love.graphics.print("A/START: Save | B: Cancel | SELECT: Show Keyboard", DisplayConfig.SIZES.margin, help_y)
+    end
     love.graphics.setColor(1, 1, 1, 1)
 end
 

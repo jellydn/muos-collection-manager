@@ -6,6 +6,7 @@ local DisplayConfig = require("src.config.display_config")
 local InputHandler = require("src.ui.input_handler")
 local CollectionManager = require("src.services.collection_manager")
 local SceneManager = require("src.scenes.scene_manager")
+local Dialog = require("src.ui.dialog")
 
 local MenuScene = {}
 
@@ -14,6 +15,7 @@ MenuScene.collections = {}
 MenuScene.selected_index = 1
 MenuScene.scroll_offset = 0
 MenuScene.item_height = 50
+MenuScene.delete_dialog = nil
 
 -- Enter scene
 function MenuScene.enter(data)
@@ -107,10 +109,15 @@ function MenuScene.draw()
 
     love.graphics.setScissor()
 
+    -- Draw confirmation dialog if active
+    if MenuScene.delete_dialog and MenuScene.delete_dialog.is_open then
+        MenuScene.delete_dialog:draw()
+    end
+
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    love.graphics.print("A: Browse | B: Back | X: Delete | Y: New Search", DisplayConfig.SIZES.margin, help_y)
+    love.graphics.print("A: Browse | B: Exit | X: Delete | START: New Search", DisplayConfig.SIZES.margin, help_y)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -132,6 +139,22 @@ end
 
 -- Handle logical action
 function MenuScene.handle_action(action)
+    -- If dialog is open, route input to it
+    if MenuScene.delete_dialog and MenuScene.delete_dialog.is_open then
+        if action == "left" then
+            MenuScene.delete_dialog:move_left()
+        elseif action == "right" then
+            MenuScene.delete_dialog:move_right()
+        elseif action == "confirm" then
+            MenuScene.delete_dialog:select()
+        elseif action == "cancel" then
+            MenuScene.delete_dialog:close()
+            MenuScene.delete_dialog = nil
+        end
+        return
+    end
+
+    -- Normal menu navigation
     if action == "up" then
         if MenuScene.selected_index > 1 then
             MenuScene.selected_index = MenuScene.selected_index - 1
@@ -151,15 +174,15 @@ function MenuScene.handle_action(action)
         end
 
     elseif action == "cancel" then
-        -- Go to search scene
-        SceneManager.switch_with_fade("search")
+        -- ESC/B exits the app (we're on main menu)
+        love.event.quit()
 
-    elseif action == "filter" then
+    elseif action == "delete" then
         -- Delete collection (X button)
         MenuScene.delete_selected_collection()
 
-    elseif action == "menu" then
-        -- New search (Y button)
+    elseif action == "menu" or action == "filter" then
+        -- M or TAB = New search
         SceneManager.switch_with_fade("search")
     end
 end
@@ -177,23 +200,36 @@ function MenuScene.delete_selected_collection()
         return
     end
 
-    -- Confirm deletion (TODO: add confirmation dialog)
-    local ok, err = CollectionManager.delete(collection.id)
-
-    if not ok then
-        Logger.error("Failed to delete collection:", err)
-        return
-    end
-
-    Logger.info("Deleted collection:", collection.name)
-
-    -- Reload collections
-    MenuScene.collections = CollectionManager.get_sorted()
-
-    -- Adjust selection
-    if MenuScene.selected_index > #MenuScene.collections then
-        MenuScene.selected_index = math.max(1, #MenuScene.collections)
-    end
+    -- Show confirmation dialog
+    MenuScene.delete_dialog = Dialog.new({
+        title = "Delete Collection",
+        message = "Delete '" .. collection.name .. "'?\nThis cannot be undone.",
+        type = Dialog.TYPE.CONFIRM,
+        options = {"Yes", "No"},
+        callback = function(choice)
+            if choice == "yes" then
+                local ok, err = CollectionManager.delete(collection.id)
+                
+                if not ok then
+                    Logger.error("Failed to delete collection:", err)
+                    MenuScene.delete_dialog = nil
+                    return
+                end
+                
+                Logger.info("Deleted collection:", collection.name)
+                
+                -- Reload collections
+                MenuScene.collections = CollectionManager.get_sorted()
+                
+                -- Adjust selection
+                if MenuScene.selected_index > #MenuScene.collections then
+                    MenuScene.selected_index = math.max(1, #MenuScene.collections)
+                end
+            end
+            MenuScene.delete_dialog = nil
+        end
+    })
+    MenuScene.delete_dialog:open()
 end
 
 return MenuScene

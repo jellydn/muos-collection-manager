@@ -6,6 +6,7 @@ local DisplayConfig = require("src.config.display_config")
 local InputHandler = require("src.ui.input_handler")
 local SearchEngine = require("src.services.search_engine")
 local GameLibrary = require("src.services.game_library")
+local GameLauncher = require("src.services.game_launcher")
 local FilterEngine = require("src.services.filter_engine")
 local SearchFilter = require("src.models.search_filter")
 local FilterPanel = require("src.ui.filter_panel")
@@ -107,14 +108,22 @@ function SearchScene.update(dt)
 
     -- Only search if query is empty (show all) or has minimum length
     local name_results
-    if query == "" or #query >= SearchScene.MIN_SEARCH_LENGTH then
+    if query == "" then
+        -- No query - show all games
+        name_results = SearchEngine.query("", dt)
+        Logger.debug(string.format("Query empty, showing all %d results", #name_results))
+    elseif #query >= SearchScene.MIN_SEARCH_LENGTH then
+        -- Query long enough - perform search
         name_results = SearchEngine.query(query, dt)
         Logger.debug(string.format("Query returned %d results", #name_results))
     else
-        -- Query too short, return empty results
-        name_results = {}
-        Logger.debug(string.format("Query too short (%d chars, min %d), showing 0 results",
-            #query, SearchScene.MIN_SEARCH_LENGTH))
+        -- Query too short - keep showing all games (don't search yet)
+        name_results = SearchEngine.get_last_results()
+        if #name_results == 0 then
+            name_results = SearchEngine.query("", dt)
+        end
+        Logger.debug(string.format("Query too short (%d chars, min %d), keeping %d results",
+            #query, SearchScene.MIN_SEARCH_LENGTH, #name_results))
     end
 
     -- Apply additional filters (excluding the name query)
@@ -139,9 +148,13 @@ function SearchScene.update(dt)
         SearchScene.search_start_time = love.timer.getTime()
     end
 
-    -- Update grid items if results changed
+    -- Update grid items only if results changed
     if SearchScene.game_grid then
-        SearchScene.game_grid:set_items(SearchScene.search_results)
+        -- Only update if the number of results changed
+        local current_count = #(SearchScene.game_grid.items or {})
+        if current_count ~= #SearchScene.search_results then
+            SearchScene.game_grid:set_items(SearchScene.search_results)
+        end
     end
 end
 
@@ -152,20 +165,24 @@ function SearchScene.draw()
         SearchScene.search_bar:draw()
     end
 
-    -- Draw on-screen keyboard
+    -- Draw on-screen keyboard OR game grid (not both)
     if SearchScene.keyboard and SearchScene.keyboard:is_visible() then
         SearchScene.keyboard:draw()
-    end
-
-    -- Draw game grid
-    if SearchScene.game_grid then
+        
+        -- Show game count when keyboard is visible
+        love.graphics.setColor(DisplayConfig.COLORS.text)
+        local count_text = string.format("%d games found", #SearchScene.search_results)
+        local keyboard_bottom = SearchScene.keyboard.y + SearchScene.keyboard.height
+        love.graphics.print(count_text, DisplayConfig.SIZES.margin, keyboard_bottom + DisplayConfig.SIZES.margin)
+        
+    elseif SearchScene.game_grid then
         SearchScene.game_grid:draw()
-    end
-
-    -- Draw loading indicator
-    if SearchScene.loading_indicator_visible then
-        love.graphics.setColor(DisplayConfig.COLORS.warning)
-        love.graphics.print("Searching...", DisplayConfig.width - 120, DisplayConfig.SIZES.margin)
+        
+        -- Draw loading indicator (only when grid is visible)
+        if SearchScene.loading_indicator_visible then
+            love.graphics.setColor(DisplayConfig.COLORS.warning)
+            love.graphics.print("Searching...", DisplayConfig.width - 120, DisplayConfig.SIZES.margin)
+        end
     end
 
     -- Draw filter panel overlay if visible
@@ -176,27 +193,41 @@ function SearchScene.draw()
     -- Draw help text
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
     local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
-    local kb_hint = SearchScene.keyboard_mode and "SELECT: Hide Keyboard" or "SELECT: Show Keyboard"
-    local coll_hint = SearchScene.keyboard_mode and "START: Collections Menu" or "START: Save Collection"
-    local filter_hint = "L: Filters  R: AND/OR"
-    love.graphics.print(kb_hint .. " | " .. coll_hint .. " | " .. filter_hint, DisplayConfig.SIZES.margin, help_y)
+    
+    if SearchScene.keyboard_mode then
+        local help_text = "SELECT: Hide Keyboard | A: Type | START: Menu"
+        love.graphics.print(help_text, DisplayConfig.SIZES.margin, help_y)
+        
+        -- Draw keyboard mode indicator
+        love.graphics.setColor(DisplayConfig.COLORS.primary)
+        love.graphics.print("[KEYBOARD MODE]", DisplayConfig.width - 150, help_y)
+    else
+        local help_text = "B: Back | Y: Favorite | SELECT: Keyboard | START: Save Collection"
+        love.graphics.print(help_text, DisplayConfig.SIZES.margin, help_y)
+    end
 end
 
 -- Handle keyboard input
 function SearchScene.keypressed(key, scancode, isrepeat)
+    Logger.debug("SearchScene.keypressed:", key, "keyboard_mode:", SearchScene.keyboard_mode)
     local action = InputHandler.keypressed(key, scancode, isrepeat)
+    Logger.debug("  -> action:", action or "nil")
 
-    if not action then
-        -- Handle text input (when not on keyboard)
-        if not SearchScene.keyboard_mode and key:len() == 1 then
-            SearchScene.search_bar:add_char(key)
-        elseif key == "backspace" and not SearchScene.keyboard_mode then
-            SearchScene.search_bar:backspace()
-        end
+    -- Process action first (navigation, etc.)
+    if action then
+        SearchScene.handle_action(action)
         return
     end
 
-    SearchScene.handle_action(action)
+    -- Only handle text input if no action was triggered AND not in keyboard mode
+    -- Allow alphanumeric and space for search input
+    if not SearchScene.keyboard_mode then
+        if key:match("^[a-zA-Z0-9%s]$") then
+            SearchScene.search_bar:add_char(key)
+        elseif key == "backspace" then
+            SearchScene.search_bar:backspace()
+        end
+    end
 end
 
 -- Handle gamepad input
@@ -219,13 +250,16 @@ function SearchScene.handle_action(action)
             local query = SearchScene.search_bar:get_query()
             local filters = {}
             -- Include name query as a filter if present
-            if query and query ~= "" then
+            if query and query ~= "" and #query >= SearchScene.MIN_SEARCH_LENGTH then
                 table.insert(filters, { filter_type = "name", operator = "contains", value = query })
+                Logger.info("Adding name filter:", query)
             end
             -- Include active panel filters
             for _, f in ipairs(SearchScene.active_filters or {}) do
                 table.insert(filters, { filter_type = f.filter_type, operator = f.operator, value = f.value })
+                Logger.info("Adding filter:", f.filter_type, f.operator, f.value)
             end
+            Logger.info("Switching to create_collection with", #filters, "filters")
             SceneManager.switch_with_fade("create_collection", { filters = filters, filter_mode = SearchScene.filter_mode })
         end
 
@@ -241,30 +275,36 @@ function SearchScene.handle_action(action)
         end
 
     elseif action == "cancel" then
-        -- Close keyboard or clear search
+        -- Back navigation: Keyboard -> Search -> Menu
         if SearchScene.keyboard_mode then
+            -- Close keyboard
             SearchScene.keyboard:hide()
             SearchScene.keyboard_mode = false
             SearchScene.search_bar:set_focus(false)
-        else
+        elseif SearchScene.search_bar:get_query() ~= "" then
+            -- Clear search if there's text
             SearchScene.search_bar:clear()
+        else
+            -- Go back to menu if search is empty
+            SceneManager.switch_with_fade("menu")
         end
 
     elseif action == "confirm" then
-        -- Select key on keyboard or select game
+        -- Select key on keyboard or launch game
         if SearchScene.keyboard_mode then
             local key = SearchScene.keyboard:get_selected_key()
             if key == "⌫" then
                 SearchScene.search_bar:backspace()
+            elseif key == "⇧" then
+                -- Toggle shift mode
+                SearchScene.keyboard:toggle_shift()
             else
                 SearchScene.search_bar:add_char(key)
             end
         else
-            -- TODO: Launch selected game
-            local selected = SearchScene.game_grid:get_selected()
-            if selected then
-                Logger.info("Selected game:", selected.title)
-            end
+            -- Game selection - do nothing (games can only be launched from collections)
+            -- User should create a collection and export to muOS
+            Logger.info("Game selected in search. Create a collection to export to muOS.")
         end
 
     elseif action == "shoulder_l" then
@@ -286,21 +326,33 @@ function SearchScene.handle_action(action)
         end
 
     elseif action == "up" then
+        Logger.info("UP pressed - keyboard_mode:", SearchScene.keyboard_mode, "grid exists:", SearchScene.game_grid ~= nil)
         if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
             SearchScene.filter_panel:handle_action(action)
         elseif SearchScene.keyboard_mode then
             SearchScene.keyboard:move_up()
         else
-            SearchScene.game_grid:move_up()
+            if SearchScene.game_grid then
+                Logger.info("  -> Calling game_grid:move_up()")
+                SearchScene.game_grid:move_up()
+            else
+                Logger.error("  -> game_grid is nil!")
+            end
         end
 
     elseif action == "down" then
+        Logger.info("DOWN pressed - keyboard_mode:", SearchScene.keyboard_mode, "grid exists:", SearchScene.game_grid ~= nil)
         if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
             SearchScene.filter_panel:handle_action(action)
         elseif SearchScene.keyboard_mode then
             SearchScene.keyboard:move_down()
         else
-            SearchScene.game_grid:move_down()
+            if SearchScene.game_grid then
+                Logger.info("  -> Calling game_grid:move_down()")
+                SearchScene.game_grid:move_down()
+            else
+                Logger.error("  -> game_grid is nil!")
+            end
         end
 
     elseif action == "left" then
@@ -319,6 +371,16 @@ function SearchScene.handle_action(action)
             SearchScene.keyboard:move_right()
         else
             SearchScene.game_grid:move_right()
+        end
+
+    elseif action == "favorite" then
+        -- Toggle favorite for selected game (Y button)
+        if not SearchScene.keyboard_mode and not (SearchScene.filter_panel and SearchScene.filter_panel:is_visible()) then
+            local selected = SearchScene.game_grid:get_selected()
+            if selected then
+                GameLibrary.toggle_favorite(selected.id)
+                Logger.info("Toggled favorite for:", selected.title, "->", selected.favorite)
+            end
         end
     end
 
