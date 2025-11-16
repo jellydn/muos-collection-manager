@@ -10,7 +10,7 @@ ZIP_FILE := $(DIST_DIR)/$(DIST_NAME).muxapp
 DISTIGNORE := .distignore
 
 # Device configuration (for deployment)
-DEVICE_IP := 192.168.1.100
+DEVICE_IP := 192.168.1.23
 
 .PHONY: all dist clean deploy help
 
@@ -22,6 +22,18 @@ dist:
 	@echo "Version: $(VERSION)"
 	@rm -rf $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)
+
+	# Check for Love2D binary and libraries
+	@if [ -f "love" ] && [ -d "libs" ] && [ -f "libs/liblove-11.5.so" ] && [ -f "libs/libluajit-5.1.so.2" ]; then \
+		echo "✅ Found Love2D binary and libraries"; \
+	else \
+		echo "⚠️  Missing Love2D binary or libraries"; \
+		echo "  - love (ARM64 binary)"; \
+		echo "  - libs/liblove-11.5.so"; \
+		echo "  - libs/libluajit-5.1.so.2"; \
+		echo ""; \
+		exit 1; \
+	fi
 
 	# Copy files excluding ignored patterns
 	@rsync -a . $(DIST_DIR)/$(CONTENT_DIR) \
@@ -72,11 +84,11 @@ help:
 	@echo "muOS Collection Manager - Build System"
 	@echo ""
 	@echo "Targets:"
-	@echo "  make dist     - Create .muxapp distribution package"
-	@echo "  make clean    - Remove build artifacts"
-	@echo "  make deploy   - Deploy to device (set DEVICE_IP=x.x.x.x)"
-	@echo "  make all      - Clean and build (default)"
-	@echo "  make help     - Show this message"
+	@echo "  make dist          - Create .muxapp distribution package"
+	@echo "  make clean         - Remove build artifacts"
+	@echo "  make deploy        - Deploy to device (set DEVICE_IP=x.x.x.x)"
+	@echo "  make all           - Clean and build (default)"
+	@echo "  make help          - Show this message"
 	@echo ""
 	@echo "Variables:"
 	@echo "  VERSION=$(VERSION)"
