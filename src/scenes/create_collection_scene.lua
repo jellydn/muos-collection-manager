@@ -71,7 +71,7 @@ function CreateCollectionScene.draw()
     love.graphics.setColor(DisplayConfig.COLORS.text)
     love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_large))
     love.graphics.print("Create Collection", DisplayConfig.SIZES.margin, DisplayConfig.SIZES.margin)
-    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_normal))
+    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_medium))
 
     -- Draw name input
     if CreateCollectionScene.name_input then

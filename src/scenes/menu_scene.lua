@@ -59,7 +59,7 @@ function MenuScene.draw()
     love.graphics.setColor(DisplayConfig.COLORS.text)
     love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_large))
     love.graphics.print("Collections", DisplayConfig.SIZES.margin, DisplayConfig.SIZES.margin)
-    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_normal))
+    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_medium))
 
     -- Draw collection list
     local start_y = DisplayConfig.SIZES.margin + 40

@@ -12,8 +12,12 @@ local FilterPanel = require("src.ui.filter_panel")
 local SearchBar = require("src.ui.search_bar")
 local OnScreenKeyboard = require("src.ui.keyboard")
 local GameGrid = require("src.ui.game_grid")
+local SceneManager = require("src.scenes.scene_manager")
 
 local SearchScene = {}
+
+-- Search configuration
+SearchScene.MIN_SEARCH_LENGTH = 3  -- Minimum characters before triggering search
 
 -- Scene state
 SearchScene.search_bar = nil
@@ -43,20 +47,26 @@ function SearchScene.enter(data)
     local keyboard_y = margin + SearchScene.search_bar.height + margin
     local keyboard_height = 200
     SearchScene.keyboard = OnScreenKeyboard.new(margin, keyboard_y, width, keyboard_height)
-    SearchScene.keyboard:show()  -- Show by default
-    SearchScene.keyboard_mode = true
+    SearchScene.keyboard:hide()  -- Start hidden - show game list first
+    SearchScene.keyboard_mode = false
 
-    -- Game grid below keyboard (or below search bar if keyboard hidden)
-    local grid_y = keyboard_y + keyboard_height + margin
+    -- Game grid below search bar (full height when keyboard hidden)
+    local grid_y = margin + SearchScene.search_bar.height + margin
     local grid_height = DisplayConfig.height - grid_y - margin
     SearchScene.game_grid = GameGrid.new(margin, grid_y, width, grid_height)
 
     -- Load initial results (all games)
     SearchScene.search_results = SearchEngine.get_last_results()
+    Logger.debug(string.format("Last search results: %d games", #SearchScene.search_results))
+
     if #SearchScene.search_results == 0 then
+        Logger.debug("No cached results, loading all games...")
         SearchScene.search_results = SearchEngine.search("")  -- Get all games
+        Logger.debug(string.format("Loaded %d games from search", #SearchScene.search_results))
     end
+
     SearchScene.game_grid:set_items(SearchScene.search_results)
+    Logger.debug(string.format("Game grid set with %d items", #SearchScene.search_results))
 
     -- Initialize FilterPanel (overlay)
     local panel_w = math.floor(DisplayConfig.width * 0.9)
@@ -65,7 +75,7 @@ function SearchScene.enter(data)
     local panel_y = math.floor((DisplayConfig.height - panel_h) / 2)
     SearchScene.filter_panel = FilterPanel.new(panel_x, panel_y, panel_w, panel_h, GameLibrary.get_all())
 
-    Logger.info("SearchScene initialized with", #SearchScene.search_results, "games")
+    Logger.info(string.format("SearchScene initialized with %d games", #SearchScene.search_results))
 end
 
 -- Exit scene
@@ -93,7 +103,19 @@ function SearchScene.update(dt)
 
     -- Execute debounced name search first
     local query = SearchScene.search_bar:get_query()
-    local name_results = SearchEngine.query(query)
+    Logger.debug(string.format("Update: query='%s', dt=%.4f", query or "", dt or 0))
+
+    -- Only search if query is empty (show all) or has minimum length
+    local name_results
+    if query == "" or #query >= SearchScene.MIN_SEARCH_LENGTH then
+        name_results = SearchEngine.query(query, dt)
+        Logger.debug(string.format("Query returned %d results", #name_results))
+    else
+        -- Query too short, return empty results
+        name_results = {}
+        Logger.debug(string.format("Query too short (%d chars, min %d), showing 0 results",
+            #query, SearchScene.MIN_SEARCH_LENGTH))
+    end
 
     -- Apply additional filters (excluding the name query)
     local filter_objs = {}
@@ -103,6 +125,7 @@ function SearchScene.update(dt)
     end
     if #filter_objs > 0 then
         SearchScene.search_results = FilterEngine.apply_filters(name_results, filter_objs, SearchScene.filter_mode)
+        Logger.debug(string.format("After filters: %d results", #SearchScene.search_results))
     else
         SearchScene.search_results = name_results
     end

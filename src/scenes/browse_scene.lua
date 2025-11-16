@@ -109,7 +109,7 @@ function BrowseScene.draw()
     love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_large))
     local title = BrowseScene.collection and BrowseScene.collection.name or "Browse"
     love.graphics.print(title, DisplayConfig.SIZES.margin, DisplayConfig.SIZES.margin)
-    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_normal))
+    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_medium))
 
     -- Draw game count
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
