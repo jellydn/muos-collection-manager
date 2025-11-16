@@ -292,9 +292,9 @@ function GameGrid:load_box_art(game)
     -- Example: NES uses "Nintendo NES - Famicom" but SNES uses "Nintendo SNES-SFC"
     local mapped_system = muos_system_map[game.system:lower()] or game.system
     local system_variations = {
-        mapped_system,  -- Primary mapping
-        (mapped_system:gsub("%-", " - ")),  -- Try with spaces (parentheses to take only first return value)
-        (mapped_system:gsub("%s*-%s*", "-")),  -- Try without spaces (parentheses to take only first return value)
+        mapped_system,  -- Primary mapping: "Nintendo NES - Famicom"
+        (mapped_system:gsub("%s*-%s*", "-")),  -- No spaces: "Nintendo NES-Famicom"
+        (mapped_system:gsub("%-", " - "):gsub("%s+", " ")),  -- Spaces normalized: ensure single space around dash
     }
 
     -- Remove duplicates from system variations
