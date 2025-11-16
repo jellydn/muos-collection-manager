@@ -173,9 +173,22 @@ end
 -- @param id string: Collection ID
 -- @return boolean, error
 function CollectionManager.delete(id)
+    Logger.debug("CollectionManager.delete called with id:", id)
+
+    local keys = {}
+    for k, _ in pairs(CollectionManager.collections_by_id or {}) do
+        table.insert(keys, k)
+    end
+    Logger.debug("collections_by_id has", #keys, "keys")
+
     local collection = CollectionManager.collections_by_id[id]
 
     if not collection then
+        Logger.debug("Collection lookup failed for id:", id)
+        Logger.debug("Total collections in memory:", #CollectionManager.collections)
+        for i, c in ipairs(CollectionManager.collections) do
+            Logger.debug("  Collection", i, ":", c.name, "id:", c.id)
+        end
         return false, "Collection not found"
     end
 
