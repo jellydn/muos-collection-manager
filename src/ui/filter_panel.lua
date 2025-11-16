@@ -197,7 +197,7 @@ function FilterPanel:draw()
     local title = string.format("Filters (%s)", self.mode)
     love.graphics.print(title, self.x + pad, self.y + pad)
 
-    local line_h = DisplayConfig.SIZES.font_size + 6
+    local line_h = DisplayConfig.SIZES.font_size_medium + 6
     local draw_y = self.y + pad * 2
 
     for i, f in ipairs(self.filters) do

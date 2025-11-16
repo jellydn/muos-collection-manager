@@ -2,6 +2,7 @@
 -- Constitution: I. Performance-First (debounced case-insensitive search)
 
 local Logger = require("src.lib.logger")
+local Profiler = require("src.lib.profiler")
 local SearchIndex = require("src.models.search_index")
 
 local SearchEngine = {}
@@ -27,12 +28,15 @@ end
 
 -- Perform case-insensitive partial match search
 function SearchEngine.search(query)
+    Profiler.start_timer("search_query")
+    
     if not SearchEngine.index then
         Logger.error("SearchEngine not initialized")
         return {}
     end
 
     if not query or query == "" then
+        Profiler.end_timer("search_query", 100)
         return SearchEngine.index.all_games
     end
 
@@ -62,6 +66,7 @@ function SearchEngine.search(query)
         Logger.warn(string.format("Search took %.2fms (>100ms threshold)", elapsed))
     end
 
+    Profiler.end_timer("search_query", 100)  -- T074: Verify <100ms for 1K games
     return results
 end
 

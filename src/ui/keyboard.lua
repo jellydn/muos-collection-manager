@@ -7,12 +7,19 @@ local DisplayConfig = require("src.config.display_config")
 local OnScreenKeyboard = {}
 OnScreenKeyboard.__index = OnScreenKeyboard
 
--- Keyboard layout (QWERTY)
-local LAYOUT = {
+-- Keyboard layouts
+local LAYOUT_LOWERCASE = {
     {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
     {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
-    {"z", "x", "c", "v", "b", "n", "m", ".", " ", "⌫"}  -- ⌫ = backspace
+    {"⇧", "z", "x", "c", "v", "b", "n", "m", ".", "⌫"}  -- ⇧ = shift, ⌫ = backspace
+}
+
+local LAYOUT_UPPERCASE = {
+    {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"},
+    {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
+    {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
+    {"⇧", "Z", "X", "C", "V", "B", "N", "M", "?", "⌫"}  -- ⇧ = shift (returns to lowercase)
 }
 
 -- Create a new OnScreenKeyboard
@@ -24,7 +31,8 @@ function OnScreenKeyboard.new(x, y, width, height)
     self.width = width
     self.height = height
 
-    self.layout = LAYOUT
+    self.shift_mode = false  -- false = lowercase, true = uppercase
+    self.layout = LAYOUT_LOWERCASE
     self.rows = #self.layout
     self.cols = #self.layout[1]
 
@@ -86,9 +94,7 @@ function OnScreenKeyboard:draw()
             end
 
             local label = key
-            if key == " " then
-                label = "SPACE"
-            end
+            -- No need for SPACE label since we removed space key
 
             local text_width = love.graphics.getFont():getWidth(label)
             local text_height = love.graphics.getFont():getHeight()
@@ -133,6 +139,18 @@ end
 -- Get selected key
 function OnScreenKeyboard:get_selected_key()
     return self.layout[self.selected_row][self.selected_col]
+end
+
+-- Toggle shift mode (lowercase <-> uppercase)
+function OnScreenKeyboard:toggle_shift()
+    self.shift_mode = not self.shift_mode
+    if self.shift_mode then
+        self.layout = LAYOUT_UPPERCASE
+        Logger.debug("Keyboard: UPPERCASE mode")
+    else
+        self.layout = LAYOUT_LOWERCASE
+        Logger.debug("Keyboard: lowercase mode")
+    end
 end
 
 -- Show/hide keyboard
