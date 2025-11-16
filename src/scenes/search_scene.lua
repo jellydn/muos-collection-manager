@@ -7,9 +7,6 @@ local InputHandler = require("src.ui.input_handler")
 local SearchEngine = require("src.services.search_engine")
 local GameLibrary = require("src.services.game_library")
 local GameLauncher = require("src.services.game_launcher")
-local FilterEngine = require("src.services.filter_engine")
-local SearchFilter = require("src.models.search_filter")
-local FilterPanel = require("src.ui.filter_panel")
 local SearchBar = require("src.ui.search_bar")
 local OnScreenKeyboard = require("src.ui.keyboard")
 local GameGrid = require("src.ui.game_grid")
@@ -28,9 +25,6 @@ SearchScene.search_results = {}
 SearchScene.keyboard_mode = false
 SearchScene.loading_indicator_visible = false
 SearchScene.search_start_time = 0
-SearchScene.active_filters = {}
-SearchScene.filter_mode = "AND"
-SearchScene.filter_panel = nil
 SearchScene.show_info_panel = false
 
 -- Enter scene
@@ -70,13 +64,6 @@ function SearchScene.enter(data)
     SearchScene.game_grid:set_items(SearchScene.search_results)
     Logger.debug(string.format("Game grid set with %d items", #SearchScene.search_results))
 
-    -- Initialize FilterPanel (overlay)
-    local panel_w = math.floor(DisplayConfig.width * 0.9)
-    local panel_h = math.floor(DisplayConfig.height * 0.9)
-    local panel_x = math.floor((DisplayConfig.width - panel_w) / 2)
-    local panel_y = math.floor((DisplayConfig.height - panel_h) / 2)
-    SearchScene.filter_panel = FilterPanel.new(panel_x, panel_y, panel_w, panel_h, GameLibrary.get_all())
-
     Logger.info(string.format("SearchScene initialized with %d games", #SearchScene.search_results))
 end
 
@@ -103,41 +90,27 @@ function SearchScene.update(dt)
         SearchScene.game_grid:update(dt)
     end
 
-    -- Execute debounced name search first
+    -- Execute debounced name search
     local query = SearchScene.search_bar:get_query()
     Logger.debug(string.format("Update: query='%s', dt=%.4f", query or "", dt or 0))
 
     -- Only search if query is empty (show all) or has minimum length
-    local name_results
     if query == "" then
         -- No query - show all games
-        name_results = SearchEngine.query("", dt)
-        Logger.debug(string.format("Query empty, showing all %d results", #name_results))
+        SearchScene.search_results = SearchEngine.query("", dt)
+        Logger.debug(string.format("Query empty, showing all %d results", #SearchScene.search_results))
     elseif #query >= SearchScene.MIN_SEARCH_LENGTH then
         -- Query long enough - perform search
-        name_results = SearchEngine.query(query, dt)
-        Logger.debug(string.format("Query returned %d results", #name_results))
+        SearchScene.search_results = SearchEngine.query(query, dt)
+        Logger.debug(string.format("Query returned %d results", #SearchScene.search_results))
     else
         -- Query too short - keep showing all games (don't search yet)
-        name_results = SearchEngine.get_last_results()
-        if #name_results == 0 then
-            name_results = SearchEngine.query("", dt)
+        SearchScene.search_results = SearchEngine.get_last_results()
+        if #SearchScene.search_results == 0 then
+            SearchScene.search_results = SearchEngine.query("", dt)
         end
         Logger.debug(string.format("Query too short (%d chars, min %d), keeping %d results",
-            #query, SearchScene.MIN_SEARCH_LENGTH, #name_results))
-    end
-
-    -- Apply additional filters (excluding the name query)
-    local filter_objs = {}
-    for _, f in ipairs(SearchScene.active_filters or {}) do
-        local obj, err = SearchFilter.new({ filter_type = f.filter_type, operator = f.operator, value = f.value })
-        if obj then table.insert(filter_objs, obj) end
-    end
-    if #filter_objs > 0 then
-        SearchScene.search_results = FilterEngine.apply_filters(name_results, filter_objs, SearchScene.filter_mode)
-        Logger.debug(string.format("After filters: %d results", #SearchScene.search_results))
-    else
-        SearchScene.search_results = name_results
+            #query, SearchScene.MIN_SEARCH_LENGTH, #SearchScene.search_results))
     end
 
     -- Show loading indicator if search is taking >100ms
@@ -184,11 +157,6 @@ function SearchScene.draw()
             love.graphics.setColor(DisplayConfig.COLORS.warning)
             love.graphics.print("Searching...", DisplayConfig.width - 120, DisplayConfig.SIZES.margin)
         end
-    end
-
-    -- Draw filter panel overlay if visible
-    if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-        SearchScene.filter_panel:draw()
     end
 
     -- Draw game info panel if active
@@ -271,13 +239,8 @@ function SearchScene.handle_action(action)
                 table.insert(filters, { filter_type = "name", operator = "contains", value = query })
                 Logger.info("Adding name filter:", query)
             end
-            -- Include active panel filters
-            for _, f in ipairs(SearchScene.active_filters or {}) do
-                table.insert(filters, { filter_type = f.filter_type, operator = f.operator, value = f.value })
-                Logger.info("Adding filter:", f.filter_type, f.operator, f.value)
-            end
             Logger.info("Switching to create_collection with", #filters, "filters")
-            SceneManager.switch_with_fade("create_collection", { filters = filters, filter_mode = SearchScene.filter_mode })
+            SceneManager.switch_with_fade("create_collection", { filters = filters, filter_mode = "AND" })
         end
 
     elseif action == "filter" then
@@ -327,29 +290,9 @@ function SearchScene.handle_action(action)
             end
         end
 
-    elseif action == "shoulder_l" then
-        -- Open/close filter panel
-        if SearchScene.filter_panel then
-            if SearchScene.filter_panel:is_visible() then
-                SearchScene.filter_panel:hide()
-            else
-                SearchScene.filter_panel:show(SearchScene.active_filters, SearchScene.filter_mode)
-            end
-        end
-
-    elseif action == "shoulder_r" then
-        -- Toggle AND/OR mode (if panel visible, forward to it)
-        if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-            SearchScene.filter_panel:handle_action(action)
-        else
-            SearchScene.filter_mode = (SearchScene.filter_mode == "AND") and "OR" or "AND"
-        end
-
     elseif action == "up" then
         Logger.info("UP pressed - keyboard_mode:", SearchScene.keyboard_mode, "grid exists:", SearchScene.game_grid ~= nil)
-        if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-            SearchScene.filter_panel:handle_action(action)
-        elseif SearchScene.keyboard_mode then
+        if SearchScene.keyboard_mode then
             SearchScene.keyboard:move_up()
         else
             if SearchScene.game_grid then
@@ -362,9 +305,7 @@ function SearchScene.handle_action(action)
 
     elseif action == "down" then
         Logger.info("DOWN pressed - keyboard_mode:", SearchScene.keyboard_mode, "grid exists:", SearchScene.game_grid ~= nil)
-        if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-            SearchScene.filter_panel:handle_action(action)
-        elseif SearchScene.keyboard_mode then
+        if SearchScene.keyboard_mode then
             SearchScene.keyboard:move_down()
         else
             if SearchScene.game_grid then
@@ -376,18 +317,14 @@ function SearchScene.handle_action(action)
         end
 
     elseif action == "left" then
-        if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-            SearchScene.filter_panel:handle_action(action)
-        elseif SearchScene.keyboard_mode then
+        if SearchScene.keyboard_mode then
             SearchScene.keyboard:move_left()
         else
             SearchScene.game_grid:move_left()
         end
 
     elseif action == "right" then
-        if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-            SearchScene.filter_panel:handle_action(action)
-        elseif SearchScene.keyboard_mode then
+        if SearchScene.keyboard_mode then
             SearchScene.keyboard:move_right()
         else
             SearchScene.game_grid:move_right()
@@ -395,19 +332,13 @@ function SearchScene.handle_action(action)
 
     elseif action == "favorite" then
         -- Toggle favorite for selected game (Y button)
-        if not SearchScene.keyboard_mode and not (SearchScene.filter_panel and SearchScene.filter_panel:is_visible()) then
+        if not SearchScene.keyboard_mode then
             local selected = SearchScene.game_grid:get_selected()
             if selected then
                 GameLibrary.toggle_favorite(selected.id)
                 Logger.info("Toggled favorite for:", selected.title, "->", selected.favorite)
             end
         end
-    end
-
-    -- Sync filters from panel when it is visible (live update)
-    if SearchScene.filter_panel and SearchScene.filter_panel:is_visible() then
-        SearchScene.active_filters = SearchScene.filter_panel:get_filters()
-        SearchScene.filter_mode = SearchScene.filter_panel:get_mode()
     end
 end
 
