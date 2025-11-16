@@ -41,19 +41,25 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 
 ### Building from Source (Advanced)
 
-```bash
-# Clone repository
-git clone https://github.com/jellydn/game-vault-manager.git
-cd game-vault-manager
+This app bundles Love2D binary and libraries (like BoxartBuddy) for maximum compatibility.
 
+#### Build and Deploy
+
+```bash
 # Build .muxapp package
 make dist
 
-# Deploy to device over network (optional)
-make deploy DEVICE_IP=192.168.1.100
+# Deploy to device over network
+make deploy DEVICE_IP=192.168.1.23
 ```
 
-The build process creates a `.muxapp` file in the `dist/` directory.
+The build process creates `dist/game-vault-<version>.muxapp` with everything bundled.
+
+**Why bundle Love2D?**
+
+- ✅ muOS does NOT include Love2D system-wide
+- ✅ Self-contained - works on any muOS device
+- ✅ No system dependencies required
 
 ## Usage
 
@@ -120,29 +126,26 @@ Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 
 ## Troubleshooting
 
-### App won't launch
+### Common Issues
 
-- Verify muOS firmware is 2405+ (Beans or later)
-- Check Love2D is installed: `love --version`
-- Check file permissions: `chmod +x game-vault-manager.love`
+**App won't launch:**
 
-### No games found
+- Check logs: `/mnt/mmc/MUOS/application/GameVault/data/log/game-vault-launch.log`
+- Verify Love2D binary exists in package
+- See TROUBLESHOOTING.md for detailed solutions
 
-- Verify ROM directories exist: `ls /mnt/mmc/ROMS/`
-- Check ROM file extensions are supported (see File Locations)
+**No games found:**
+
+- Verify ROM directories: `ls /mnt/mmc/ROMS/`
 - Re-scan library from Settings menu
 
-### Search is slow
+**For developers - Build fails:**
 
-- First search builds index (one-time cost)
-- Subsequent searches should be <100-500ms
-- Check memory usage isn't hitting 256MB limit
-
-### Collections not saving
-
-- Check directory permissions: `~/.config/muos/collections/`
-- Verify disk space available: `df -h`
-- Check logs for JSON write errors
+```bash
+# Missing Love2D binary/libraries error
+./get-love-from-device.sh YOUR_DEVICE_IP
+make dist
+```
 
 ## Development
 
