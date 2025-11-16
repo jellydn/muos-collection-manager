@@ -11,8 +11,33 @@ Logger.LEVEL = {
     ERROR = 4
 }
 
--- Current log level (set to INFO in production, DEBUG for development)
-Logger.current_level = Logger.LEVEL.INFO
+-- Detect if running on muOS device (production) or development machine
+local function is_muos_device()
+    -- Check for muOS-specific paths
+    local muos_paths = {
+        "/mnt/mmc/MUOS",
+        "/opt/muos",
+        "/run/muos"
+    }
+    
+    for _, path in ipairs(muos_paths) do
+        local check = io.popen(string.format('test -d "%s" && echo "1"', path))
+        if check then
+            local result = check:read("*a")
+            check:close()
+            if result:match("1") then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Set default log level based on environment
+-- Production (muOS device): INFO level for normal operation
+-- Development (Mac/PC): DEBUG level for development
+Logger.current_level = is_muos_device() and Logger.LEVEL.INFO or Logger.LEVEL.DEBUG
 
 -- Format timestamp
 local function format_time()
