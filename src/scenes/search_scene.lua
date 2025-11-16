@@ -310,9 +310,9 @@ function SearchScene.handle_action(action)
         -- Select key on keyboard or show game info
         if SearchScene.keyboard_mode then
             local key = SearchScene.keyboard:get_selected_key()
-            if key == "⌫" then
+            if key == "DEL" then
                 SearchScene.search_bar:backspace()
-            elseif key == "⇧" then
+            elseif key == "CAPS" then
                 -- Toggle shift mode
                 SearchScene.keyboard:toggle_shift()
             else

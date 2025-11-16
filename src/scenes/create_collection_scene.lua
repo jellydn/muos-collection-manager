@@ -147,8 +147,11 @@ function CreateCollectionScene.handle_action(action)
         if CreateCollectionScene.keyboard_mode then
             -- Select key on keyboard
             local key = CreateCollectionScene.keyboard:get_selected_key()
-            if key == "⌫" then
+            if key == "DEL" then
                 CreateCollectionScene.name_input:backspace()
+            elseif key == "CAPS" then
+                -- Toggle shift mode
+                CreateCollectionScene.keyboard:toggle_shift()
             else
                 CreateCollectionScene.name_input:add_char(key)
             end

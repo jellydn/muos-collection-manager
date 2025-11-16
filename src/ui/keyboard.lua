@@ -12,14 +12,14 @@ local LAYOUT_LOWERCASE = {
     {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
     {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
-    {"⇧", "z", "x", "c", "v", "b", "n", "m", ".", "⌫"}  -- ⇧ = shift, ⌫ = backspace
+    {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"}
 }
 
 local LAYOUT_UPPERCASE = {
     {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"},
     {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
     {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
-    {"⇧", "Z", "X", "C", "V", "B", "N", "M", "?", "⌫"}  -- ⇧ = shift (returns to lowercase)
+    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "?", "DEL"}
 }
 
 -- Create a new OnScreenKeyboard
