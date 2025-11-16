@@ -38,8 +38,17 @@
 - Clear prioritization with 3 independent user stories (P1, P2, P3)
 - Well-defined edge cases covering error scenarios and performance limits
 - Success criteria are measurable and technology-agnostic (time-based, FPS metrics)
-- Comprehensive functional requirements (FR-001 through FR-012)
+- Comprehensive functional requirements (FR-001 through FR-020)
 - Key entities properly defined without implementation details
 - Assumptions section clarifies dependencies on game metadata
+- muOS integration requirements clearly specified (FR-013, FR-014, FR-020)
+- Game deletion and box art display requirements added (FR-016, FR-017, FR-018)
+
+**Recent Updates** (2025-11-16):
+- Added FR-016 through FR-020 for game deletion, box art display, and muOS export features
+- Added SC-006 through SC-009 for new feature success criteria
+- Added edge cases for deletion, box art, and export error scenarios
+- All new requirements maintain technology-agnostic approach
+- No implementation details leaked into specification
 
 **Ready for Next Phase**: This specification is complete and ready for `/speckit.clarify` (if needed) or `/speckit.plan` to create the technical implementation plan.

@@ -65,6 +65,11 @@ Players can combine multiple search criteria including game name, genre tags, ye
 - How does system handle corrupted collection data? (Load default "All Games" collection and log error)
 - What happens when player creates collection with same name as existing? (Prompt to overwrite or rename)
 - How does search perform with 10,000+ game library? (Search must complete within 500ms, use indexing if needed)
+- How does system integrate with different muOS versions? (Auto-detect launcher paths and fall back gracefully)
+- What happens on non-muOS devices (TrimUI)? (System operates as standalone launcher with native integration)
+- What happens when deleting a ROM file that doesn't exist? (Show error dialog: "File not found or already deleted")
+- What happens when box art image file is missing? (Display placeholder icon or text-only list item)
+- What happens when exporting collection to read-only filesystem? (Show error dialog with permission issue message)
 
 ## Requirements _(mandatory)_
 
@@ -82,6 +87,16 @@ Players can combine multiple search criteria including game name, genre tags, ye
 - **FR-010**: System MUST support multiple filter criteria (name, genre, year, player count)
 - **FR-011**: System MUST allow combining filters with AND/OR boolean logic (toggle via dedicated button, see quickstart.md for device mappings)
 - **FR-012**: System MUST handle empty search results gracefully with informative message
+- **FR-013**: System MUST export collections to muOS-compatible format for integration with native launcher
+- **FR-014**: System MUST integrate with muOS muxcollect module for game launching (delegate to native system)
+- **FR-015**: System MUST support both muOS and TrimUI device architectures with appropriate display scaling
+- **FR-016**: System MUST allow players to delete individual games from library with confirmation dialog
+- **FR-017**: System MUST permanently delete ROM files when player confirms game deletion
+- **FR-018**: System MUST display box art thumbnails for games when available from muOS catalogue
+- **FR-019**: System MUST show success/error dialogs after collection export with clear next-step instructions
+- **FR-020**: System MUST convert ROM paths from /mnt/mmc/ROMS to /mnt/union/ROMS for muOS compatibility
+- **FR-021**: System MUST read muOS history to populate "Recently Played" system collection
+- **FR-022**: System MUST sync "Recently Played" with games launched from muOS History module
 
 ### Key Entities
 
@@ -99,9 +114,13 @@ Players can combine multiple search criteria including game name, genre tags, ye
 - **SC-003**: Search results update within 500ms for libraries up to 10,000 games
 - **SC-004**: Players can create and save a custom collection in under 30 seconds
 - **SC-005**: Collections persist across application restarts with 100% accuracy
-- **SC-006**: System supports at least 50 custom collections without performance degradation
-- **SC-007**: Memory usage for collection management stays under 10MB (part of 256MB total budget)
-- **SC-008**: Zero frame drops when scrolling through search results (maintains 60 FPS)
+- **SC-006**: Players can delete games with confirmation in under 5 seconds
+- **SC-007**: Exported collections appear in muOS muxcollect within 2 seconds of export
+- **SC-008**: System displays box art thumbnails when available, improving visual browsing experience
+- **SC-009**: UI scales correctly on both 4:3 (640x480) and 16:9 (1280x720) displays without distortion
+- **SC-010**: System supports at least 50 custom collections without performance degradation
+- **SC-011**: Memory usage for collection management stays under 10MB (part of 256MB total budget)
+- **SC-012**: Zero frame drops when scrolling through search results (maintains 60 FPS)
 
 ## Assumptions
 

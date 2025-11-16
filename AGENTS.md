@@ -1,4 +1,4 @@
-# AGENTS.md - muOS Collection Manager
+# AGENTS.md - Game Vault
 
 ## Build & Test Commands
 

@@ -1,4 +1,6 @@
-# muOS Collection Manager
+# Game Vault
+
+**A dynamic game collection manager for muOS and TrimUI devices**
 
 A dynamic game collection management system for muOS-compatible retro handhelds, built with Love2D.
 
@@ -124,6 +126,12 @@ Tested on RG35XX (ARM Cortex-A7 @ 1.5GHz, 256MB RAM):
 | 5,000 games  | <300ms      | ~8MB         | 60  |
 | 10,000 games | <500ms      | ~10MB        | 60  |
 
+**Performance Monitoring:**
+
+- Press F1 to toggle debug mode (shows FPS counter and memory usage)
+- Press F2 to print profiler summary to console
+- Performance logs are written to `game-vault-launch.log`
+
 ## Troubleshooting
 
 ### Common Issues
@@ -153,14 +161,20 @@ make dist
 
 ```bash
 # Clone repository
-git clone https://github.com/jellydn/game-vault-manager.git
-cd game-vault-manager
+git clone https://github.com/jellydn/muos-collection-manager.git
+cd muos-collection-manager
+
+# Install dependencies (macOS)
+brew install --cask love
 
 # Run with Love2D
-love .
+./run-test.sh
 
 # Package for muOS
-zip -r game-vault-manager.love . -x ".*" "tests/*" "specs/*"
+make dist
+
+# Clean build artifacts
+make clean
 ```
 
 ### Running Tests
@@ -174,11 +188,42 @@ busted tests/unit/
 
 # Run integration tests
 busted tests/integration/
+
+# Run with test ROMs (macOS)
+./run-test.sh
 ```
 
 ### Project Structure
 
-See [specs/001-collection-search/plan.md](specs/001-collection-search/plan.md) for detailed architecture.
+```
+.
+├── main.lua                 # Love2D entry point
+├── conf.lua                 # Love2D configuration
+├── src/
+│   ├── config/             # Configuration modules (paths, display, input)
+│   ├── lib/                # Utilities (logger, json, profiler, error_handler)
+│   ├── models/             # Data models (Game, Collection, Filter, SearchIndex)
+│   ├── scenes/             # UI scenes (search, menu, browse, create_collection, settings)
+│   ├── services/           # Business logic (GameLibrary, SearchEngine, CollectionManager, FilterEngine, Persistence, GameLauncher)
+│   └── ui/                 # UI components (SearchBar, GameGrid, FilterPanel, Dialog, InputHandler, Keyboard)
+├── assets/
+│   ├── fonts/             # Font files
+│   ├── images/            # Icons and sprites
+│   └── sounds/            # UI sound effects
+├── tests/
+│   ├── unit/              # Unit tests
+│   └── integration/       # Integration tests
+├── specs/                 # Specification documents
+└── docs/                  # Additional documentation
+```
+
+### Architecture Principles
+
+See [.specify/memory/constitution.md](.specify/memory/constitution.md) for project governance principles.
+
+### Performance & Testing
+
+See [HARDWARE_TESTING.md](HARDWARE_TESTING.md) for device testing procedures and performance targets.
 
 ## License
 

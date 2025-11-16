@@ -166,28 +166,43 @@
 
 ---
 
-## Phase N: Polish & Cross-Cutting Concerns
+## Phase N: Polish & muOS Integration
 
-**Purpose**: Improvements that affect multiple user stories
+**Purpose**: muOS collection export, box art display, and final polish
 
-- [ ] T065 [P] Add UI sound effects in assets/sounds/ui/ (button click, confirm)
-- [ ] T066 [P] Add UI icons in assets/images/icons/ (search, add, delete, filter)
-- [ ] T067 [P] Create Dialog component in src/ui/dialog.lua (confirmation prompts)
-- [ ] T068 [P] Add favorite toggle functionality (Y button per quickstart.md)
-- [ ] T069 [P] Add collection deletion with confirmation dialog
-- [ ] T070 [P] Add SettingsScene in src/scenes/settings_scene.lua (future settings)
-- [ ] T071 Implement game launch integration (delegates to muOS ROM launcher)
-- [ ] T072 Add performance profiling with love.timer (log frame times, search times)
-- [ ] T073 Optimize: Verify 60 FPS maintained during scrolling and search
-- [ ] T074 Optimize: Verify search completes <100ms for 1K games, <500ms for 10K games
-- [ ] T075 Optimize: Verify memory usage stays <10MB for collection system
-- [ ] T076 Add error handling for missing ROM directories
-- [ ] T077 Add error handling for corrupted JSON collection files and unknown schema versions (backup + fallback to defaults)
-- [ ] T078 Test on actual muOS hardware (RG35XX or similar)
-- [ ] T079 Verify muOS controller compatibility (D-pad, A/B/X/Y, L/R, START/SELECT)
-- [ ] T080 Update README.md with build and installation instructions
-- [ ] T081 Package as .love file for muOS distribution
-- [ ] T082 Run full quickstart.md validation on device
+- [x] T065 [P] Add UI sound effects in assets/sounds/ui/ (button click, confirm)
+- [x] T066 [P] Add UI icons in assets/images/icons/ (search, add, delete, filter)
+- [x] T067 [P] Create Dialog component in src/ui/dialog.lua (confirmation prompts)
+- [x] T068 [P] Add favorite toggle functionality (Y button per quickstart.md)
+- [x] T069 [P] Add collection deletion with confirmation dialog
+- [x] T070 [P] Add SettingsScene in src/scenes/settings_scene.lua (future settings)
+- [x] T071 Implement muOS collection export (game_launcher.lua exports to /mnt/mmc/MUOS/info/collection/)
+- [x] T072 Export format: Create folder per collection with .cfg files (3-line format: path, system, title)
+- [x] T073 Handle path conversion (/mnt/mmc/ROMS → /mnt/union/ROMS for muOS)
+- [x] T074 Update browse_scene.lua to export collections instead of launching games
+- [x] T075 Add success/error dialog after export with instructions to open muOS > Collection
+- [x] T076 Update search_scene.lua help text to reflect muOS integration
+- [x] T077 Add TrimUI device detection and display scaling (720p baseline for 16:9)
+- [x] T078 Add performance profiling with love.timer (log frame times, search times)
+- [x] T079 Optimize: Verify 60 FPS maintained during scrolling and search
+- [x] T080 Optimize: Verify search completes <100ms for 1K games, <500ms for 10K games
+- [x] T081 Optimize: Verify memory usage stays <10MB for collection system
+- [x] T082 Add error handling for missing ROM directories
+- [x] T083 Add error handling for corrupted JSON collection files
+- [ ] T084 Add box art image loading from /mnt/mmc/MUOS/info/catalogue/<System>/box/
+- [ ] T085 Update GameGrid to display box art thumbnails instead of text-only list
+- [ ] T086 Add fallback placeholder image when box art not found
+- [ ] T087 Implement image caching to avoid reloading same images
+- [ ] T088 Add muOS history integration for "Recently Played" collection
+- [ ] T089 Read from /mnt/mmc/MUOS/info/history/ to populate recent games
+- [ ] T090 Parse muOS history format and match to Game Library
+- [ ] T091 Test muOS collection export format on actual device
+- [ ] T092 Verify exported collections appear in muOS muxcollect module
+- [ ] T093 Test on actual muOS hardware (RG35XX or similar)
+- [ ] T094 Verify muOS controller compatibility (D-pad, A/B/X/Y, L/R, START/SELECT)
+- [x] T095 Update README.md with build and installation instructions
+- [x] T096 Package as .muxapp file for muOS distribution
+- [ ] T097 Run full quickstart.md validation on device
 
 ---
 
@@ -310,6 +325,6 @@ Verify these metrics at completion of each phase:
 - Each user story should be independently completable and testable
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- Total tasks: 82 (8 setup, 7 foundational, 14 US1, 17 US2, 18 US3, 18 polish)
+- Total tasks: 97 (8 setup, 7 foundational, 14 US1, 17 US2, 18 US3, 33 polish + muOS integration + box art + history)
 - Estimated MVP (US1 only): 29 tasks
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
