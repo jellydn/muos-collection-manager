@@ -95,7 +95,7 @@ function MenuScene.draw()
 
         local name = collection.name
         if collection.is_system then
-            name = "★ " .. name  -- Star for system collections
+            name = "[S] " .. name  -- [S] for system collections
         end
 
         love.graphics.print(name, margin + 10, y + 15)
