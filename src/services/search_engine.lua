@@ -67,11 +67,15 @@ end
 
 -- Query with debouncing (call this from UI update loop)
 function SearchEngine.query(query, dt)
-    SearchEngine.pending_query = query or ""
+    local current_query = query or ""
 
     -- Reset timer if query changed
-    if query ~= SearchEngine.last_query then
+    if current_query ~= SearchEngine.last_query then
         SearchEngine.debounce_timer = 0
+        SearchEngine.pending_query = current_query
+        Logger.debug(string.format("Search query changed: '%s' -> '%s' (resetting debounce)",
+            SearchEngine.last_query, current_query))
+        SearchEngine.last_query = current_query  -- Update last_query immediately
     end
 
     -- Increment timer
@@ -79,14 +83,21 @@ function SearchEngine.query(query, dt)
 
     -- Execute search after debounce delay
     if SearchEngine.debounce_timer >= SearchEngine.debounce_delay then
-        if SearchEngine.pending_query ~= SearchEngine.last_query then
-            SearchEngine.last_results = SearchEngine.search(SearchEngine.pending_query)
-            SearchEngine.last_query = SearchEngine.pending_query
+        Logger.debug(string.format("Executing search for: '%s'", SearchEngine.pending_query))
+        SearchEngine.last_results = SearchEngine.search(SearchEngine.pending_query)
+        -- Only log if query is not empty (avoid spam for "show all" queries)
+        if SearchEngine.pending_query ~= "" then
+            Logger.info(string.format("Search results: %d games for query '%s'",
+                #SearchEngine.last_results, SearchEngine.pending_query))
         end
+        -- Reset timer to prevent repeated execution until query changes
+        SearchEngine.debounce_timer = SearchEngine.debounce_delay
         return SearchEngine.last_results
     end
 
     -- Return last results while debouncing
+    Logger.debug(string.format("Debouncing... (%.3fs / %.3fs)",
+        SearchEngine.debounce_timer, SearchEngine.debounce_delay))
     return SearchEngine.last_results
 end
 

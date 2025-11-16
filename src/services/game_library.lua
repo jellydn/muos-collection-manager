@@ -52,39 +52,78 @@ local function parse_filename(filename, system)
     return metadata
 end
 
--- Scan a single directory for ROMs
-local function scan_directory(dir_path, system)
-    local games = {}
+-- Recursively scan directory and subdirectories for ROM files
+local function scan_directory_recursive(dir_path, games, depth)
+    games = games or {}
+    depth = depth or 0
+
+    -- Safety limit: prevent infinite recursion
+    if depth > 10 then
+        Logger.warn("Maximum recursion depth reached:", dir_path)
+        return games
+    end
 
     if not Paths.dir_exists(dir_path) then
         Logger.warn("Directory does not exist:", dir_path)
         return games
     end
 
-    Logger.debug("Scanning directory:", dir_path)
+    Logger.info("Scanning directory:", dir_path)
 
-    -- Use popen to list files (POSIX systems)
-    local handle = io.popen('ls -1 "' .. dir_path .. '" 2>/dev/null')
+    -- Ensure path ends with /
+    if not dir_path:match("/$") then
+        dir_path = dir_path .. "/"
+    end
+
+    -- Use find command for recursive scanning (much faster than manual recursion)
+    -- -type f: files only, -not -path: exclude hidden directories
+    local find_cmd = string.format(
+        'find "%s" -type f -not -path "*/\\.*" 2>&1',
+        dir_path
+    )
+
+    Logger.info("Executing find command...")
+    local handle = io.popen(find_cmd)
     if not handle then
-        Logger.error("Failed to open directory:", dir_path)
+        Logger.error("Failed to execute find command for:", dir_path)
         return games
     end
 
+    Logger.info("Reading file list...")
     local count = 0
-    for filename in handle:lines() do
+    local total_files = 0
+    for file_path in handle:lines() do
+        total_files = total_files + 1
+
+        -- Progress indicator every 100 files
+        if total_files % 100 == 0 then
+            Logger.info(string.format("Scanned %d files, found %d ROMs...", total_files, count))
+        end
+
+        local filename = file_path:match("([^/]+)$")
+
         -- Check if it's a valid ROM file
-        if Paths.is_rom_file(filename, system) then
-            local file_path = dir_path .. filename
+        if filename and Paths.is_rom_file(filename) then
+            -- Detect system from file path (includes parent directory for archives)
+            local system = Paths.detect_system_from_path(file_path)
 
             -- Parse metadata from filename
             local metadata = parse_filename(filename, system)
+
+            -- Log first 5 games found, then only every 10th
+            if count < 5 or count % 10 == 0 then
+                Logger.info(string.format("Found ROM #%d: %s [%s]",
+                    count + 1,
+                    metadata.title,
+                    system:upper()))
+            end
 
             -- Create game object
             local game = Game.new({
                 id = Game.generate_id(file_path),
                 title = metadata.title,
                 file_path = file_path,
-                system = system:lower(),
+                system = system,
                 genre = metadata.genre,
                 year = metadata.year,
                 player_count = metadata.player_count,
@@ -105,26 +144,39 @@ local function scan_directory(dir_path, system)
     end
 
     handle:close()
-    Logger.info("Found", count, "games in", system)
+
+    Logger.info(string.format("Scan complete: %d total files, %d valid ROMs found", total_files, count))
 
     return games
 end
 
--- Load all games from ROM directories
+-- Load all games from ROM directories (recursive scan)
 function GameLibrary.load()
     Logger.info("Loading game library...")
 
     local start_time = love.timer.getTime()
     GameLibrary.games = {}
 
-    -- Scan each ROM directory
-    for system, extensions in pairs(Paths.rom_extensions) do
-        local rom_dir = Paths.roms_root .. "/" .. system .. "/"
-        local games_found = scan_directory(rom_dir, system)
+    -- Check if ROM root exists
+    Logger.info("Checking ROM root directory:", Paths.roms_root)
+    local dir_exists = Paths.dir_exists(Paths.roms_root)
+    Logger.info("Directory exists check result:", dir_exists)
 
-        -- Add to main library
-        for _, game in ipairs(games_found) do
-            table.insert(GameLibrary.games, game)
+    -- Recursively scan the entire ROMS root directory
+    if dir_exists then
+        Logger.info("Starting recursive scan of:", Paths.roms_root)
+        GameLibrary.games = scan_directory_recursive(Paths.roms_root, {}, 0)
+        Logger.info("Recursive scan returned", #GameLibrary.games, "games")
+    else
+        Logger.error("ROM root directory does not exist:", Paths.roms_root)
+        -- Try to list what's in /mnt/mmc to help debug
+        Logger.info("Attempting to list /mnt/mmc contents...")
+        local handle = io.popen("ls -la /mnt/mmc 2>&1")
+        if handle then
+            for line in handle:lines() do
+                Logger.info("  " .. line)
+            end
+            handle:close()
         end
     end
 
@@ -133,6 +185,16 @@ function GameLibrary.load()
 
     local elapsed = (love.timer.getTime() - start_time) * 1000
     Logger.info(string.format("Loaded %d games in %.2fms", #GameLibrary.games, elapsed))
+
+    -- Log system breakdown
+    local system_counts = {}
+    for _, game in ipairs(GameLibrary.games) do
+        system_counts[game.system] = (system_counts[game.system] or 0) + 1
+    end
+
+    for system, count in pairs(system_counts) do
+        Logger.info(string.format("  %s: %d games", system:upper(), count))
+    end
 
     GameLibrary.is_loaded = true
     return GameLibrary.games

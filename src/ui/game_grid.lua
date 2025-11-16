@@ -16,13 +16,10 @@ function GameGrid.new(x, y, width, height)
     self.width = width
     self.height = height
 
-    -- Grid configuration
-    self.item_width = DisplayConfig.SIZES.grid_item_width
-    self.item_height = DisplayConfig.SIZES.grid_item_height + DisplayConfig.SIZES.font_size_small + 4
+    -- List configuration (vertical list, not grid)
+    self.item_height = 50  -- Height of each list item
     self.padding = DisplayConfig.SIZES.padding
-
-    -- Calculate columns
-    self.cols = math.floor((width - self.padding) / (self.item_width + self.padding))
+    self.cols = 1  -- List view - single column
 
     -- Virtual scrolling state
     self.scroll_offset = 0
@@ -73,7 +70,7 @@ function GameGrid:update(dt)
     end
 end
 
--- Draw grid with virtual scrolling (optimized with batching)
+-- Draw list with virtual scrolling
 function GameGrid:draw()
     -- Enable scissor (clip outside viewport)
     love.graphics.setScissor(self.x, self.y, self.width, self.height)
@@ -92,49 +89,26 @@ function GameGrid:draw()
     end
 
     -- Calculate visible range (viewport culling)
-    local visible_start_row = math.floor(self.scroll_offset / self.item_height)
-    local visible_end_row = math.ceil((self.scroll_offset + self.height) / self.item_height)
+    local visible_start = math.max(1, math.floor(self.scroll_offset / self.item_height))
+    local visible_end = math.min(#self.items, math.ceil((self.scroll_offset + self.height) / self.item_height) + 1)
 
-    local start_index = visible_start_row * self.cols + 1
-    local end_index = math.min(#self.items, (visible_end_row + 1) * self.cols)
-
-    -- Batch draw rectangles for better performance
-    -- First pass: Draw all backgrounds
-    for i = start_index, end_index do
-        if self.items[i] then
-            local row = math.floor((i - 1) / self.cols)
-            local col = (i - 1) % self.cols
-            local item_x = self.x + self.padding + col * (self.item_width + self.padding)
-            local item_y = self.y + self.padding + row * self.item_height - self.scroll_offset
+    -- Draw each visible list item
+    for i = visible_start, visible_end do
+        local game = self.items[i]
+        if game then
+            local item_y = self.y + (i - 1) * self.item_height - self.scroll_offset
             local is_selected = (i == self.selected_index)
 
-            -- Draw background
+            -- Draw background bar
             if is_selected then
                 love.graphics.setColor(DisplayConfig.COLORS.primary)
             else
                 love.graphics.setColor(DisplayConfig.COLORS.surface)
             end
-            love.graphics.rectangle("fill", item_x, item_y, self.item_width, self.item_width, 4, 4)
-        end
-    end
+            love.graphics.rectangle("fill", self.x, item_y, self.width, self.item_height)
 
-    -- Second pass: Draw all borders
-    love.graphics.setColor(DisplayConfig.COLORS.secondary)
-    love.graphics.setLineWidth(1)
-    for i = start_index, end_index do
-        if self.items[i] then
-            local row = math.floor((i - 1) / self.cols)
-            local col = (i - 1) % self.cols
-            local item_x = self.x + self.padding + col * (self.item_width + self.padding)
-            local item_y = self.y + self.padding + row * self.item_height - self.scroll_offset
-            love.graphics.rectangle("line", item_x, item_y, self.item_width, self.item_width, 4, 4)
-        end
-    end
-
-    -- Third pass: Draw all text (batched)
-    for i = start_index, end_index do
-        if self.items[i] then
-            self:draw_item_text(i, self.items[i])
+            -- Draw text content
+            self:draw_list_item(game, item_y, is_selected)
         end
     end
 
@@ -143,73 +117,72 @@ function GameGrid:draw()
 
     -- Reset color
     love.graphics.setColor(1, 1, 1, 1)
-end-- Draw item text only (for batched rendering)
-function GameGrid:draw_item_text(index, game)
-    local row = math.floor((index - 1) / self.cols)
-    local col = (index - 1) % self.cols
-
-    local item_x = self.x + self.padding + col * (self.item_width + self.padding)
-    local item_y = self.y + self.padding + row * self.item_height - self.scroll_offset
-
-    local is_selected = (index == self.selected_index)
+end-- Draw a single list item
+function GameGrid:draw_list_item(game, item_y, is_selected)
+    local padding = 12
+    local text_y = item_y + (self.item_height - DisplayConfig.SIZES.font_size_medium) / 2
 
     -- Set text color
     if is_selected then
-        love.graphics.setColor(DisplayConfig.COLORS.background)
+        love.graphics.setColor(1, 1, 1)  -- White for selected
     else
         love.graphics.setColor(DisplayConfig.COLORS.text)
     end
 
-    -- Use cached truncated title if available
-    local cache_key = game.id .. "_" .. self.item_width
-    local title = self.font_cache[cache_key]
+    -- Game title (left side)
+    local title = game.title or "Unknown"
+    local max_title_width = self.width - 250  -- Leave space for system and year
+    local font = love.graphics.getFont()
 
-    if not title then
-        title = game.title
-        local max_width = self.item_width - 8
-        local font = love.graphics.getFont()
-
-        -- Truncate title if too long
-        if font:getWidth(title) > max_width then
-            while font:getWidth(title .. "...") > max_width and #title > 0 do
-                title = title:sub(1, -2)
-            end
-            title = title .. "..."
+    -- Truncate title if too long
+    if font:getWidth(title) > max_title_width then
+        while font:getWidth(title .. "...") > max_title_width and #title > 0 do
+            title = title:sub(1, -2)
         end
-
-        -- Cache the truncated title
-        self.font_cache[cache_key] = title
+        title = title .. "..."
     end
 
-    local text_y = item_y + self.item_width + 2
-    love.graphics.print(title, item_x + 4, text_y)
-end-- Navigate grid
+    love.graphics.print(title, self.x + padding, text_y)
+
+    -- System badge (right side)
+    local system_text = (game.system or "unknown"):upper()
+    local system_x = self.x + self.width - 180
+
+    -- Dim color for system
+    if is_selected then
+        love.graphics.setColor(0.9, 0.9, 0.9)
+    else
+        love.graphics.setColor(DisplayConfig.COLORS.text_dim)
+    end
+    love.graphics.print("[" .. system_text .. "]", system_x, text_y)
+
+    -- Year (far right)
+    if game.year then
+        local year_text = tostring(game.year)
+        local year_x = self.x + self.width - 80
+        love.graphics.print(year_text, year_x, text_y)
+    end
+end-- Navigate list (up/down only for single column)
 function GameGrid:move_up()
-    if self.selected_index > self.cols then
-        self.selected_index = self.selected_index - self.cols
-        Logger.debug("GameGrid selection:", self.selected_index)
-    end
-end
-
-function GameGrid:move_down()
-    if self.selected_index + self.cols <= #self.items then
-        self.selected_index = self.selected_index + self.cols
-        Logger.debug("GameGrid selection:", self.selected_index)
-    end
-end
-
-function GameGrid:move_left()
     if self.selected_index > 1 then
         self.selected_index = self.selected_index - 1
         Logger.debug("GameGrid selection:", self.selected_index)
     end
 end
 
-function GameGrid:move_right()
+function GameGrid:move_down()
     if self.selected_index < #self.items then
         self.selected_index = self.selected_index + 1
         Logger.debug("GameGrid selection:", self.selected_index)
     end
+end
+
+function GameGrid:move_left()
+    -- Not used in list view
+end
+
+function GameGrid:move_right()
+    -- Not used in list view
 end
 
 -- Get selected game

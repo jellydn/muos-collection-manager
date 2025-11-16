@@ -27,8 +27,10 @@ local app = {
 
 -- Love2D: Initialization
 function love.load()
-    Logger.info("muOS Collection Manager v" .. app.version)
-    Logger.info("Love2D version:", love.getVersion())
+    -- Wrap in error handler to catch startup errors
+    local success, err = pcall(function()
+        Logger.info("muOS Collection Manager v" .. app.version)
+        Logger.info("Love2D version:", love.getVersion())
 
     -- Initialize configurations
     DisplayConfig.init()
@@ -67,6 +69,17 @@ function love.load()
     SceneManager.switch("search")
 
     Logger.info("Application initialized successfully")
+    end) -- End of pcall
+    
+    if not success then
+        Logger.error("Failed to initialize application:", err)
+        Logger.error(debug.traceback())
+        -- Try to show error on screen
+        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.print("ERROR: " .. tostring(err), 10, 10)
+        love.graphics.print("Check log file for details", 10, 30)
+        -- Don't quit immediately - let user see the error
+    end
 end
 
 -- Love2D: Update loop (60 FPS target)
@@ -142,6 +155,14 @@ function love.keypressed(key, scancode, isrepeat)
             Logger.set_level(Logger.LEVEL.DEBUG)
             Logger.debug("Debug mode ON")
         end
+        return
+    end
+
+    -- Quit with SELECT+START (hold both buttons - common on handhelds)
+    -- Check this before passing to input handler
+    if InputHandler.is_down("filter") and InputHandler.is_down("menu") then
+        Logger.info("Quit requested (SELECT+START held)")
+        love.event.quit()
         return
     end
 
