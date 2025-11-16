@@ -53,7 +53,7 @@ local function parse_filename(filename, system)
 end
 
 -- Recursively scan directory and subdirectories for ROM files
-local function scan_directory_recursive(dir_path, games, depth)
+local function scan_directory_recursive(dir_path, games, depth, progress_callback)
     games = games or {}
     depth = depth or 0
 
@@ -82,22 +82,57 @@ local function scan_directory_recursive(dir_path, games, depth)
         dir_path
     )
 
-    Logger.info("Executing find command...")
+    Logger.info("Executing find command:", find_cmd)
+    Logger.debug("About to execute find command...")
+
+    local start_time = love.timer.getTime()
     local handle = io.popen(find_cmd)
+
+    Logger.debug("io.popen() returned, handle:", tostring(handle))
+
     if not handle then
         Logger.error("Failed to execute find command for:", dir_path)
+        Logger.error("ERROR: io.popen() returned nil!")
         return games
     end
 
-    Logger.info("Reading file list...")
+    Logger.info("Reading file list from find output...")
+    Logger.debug("Starting to read lines from find output...")
     local count = 0
     local total_files = 0
+    local max_scan_time = 60 -- Maximum 60 seconds for scanning
+    local last_log_time = start_time
+
     for file_path in handle:lines() do
         total_files = total_files + 1
 
-        -- Progress indicator every 100 files
+        -- Log first file found
+        if total_files == 1 then
+            Logger.debug("First file found:", file_path)
+        end
+
+        -- Check timeout every 100 files
         if total_files % 100 == 0 then
-            Logger.info(string.format("Scanned %d files, found %d ROMs...", total_files, count))
+            local elapsed = love.timer.getTime() - start_time
+            if elapsed > max_scan_time then
+                Logger.warn(string.format("Scan timeout after %.1fs, scanned %d files, found %d ROMs",
+                    elapsed, total_files, count))
+                break
+            end
+        end
+
+        -- Progress callback every 50 files (more frequent for UI updates)
+        if progress_callback and total_files % 50 == 0 then
+            local elapsed = love.timer.getTime() - start_time
+            progress_callback(count, total_files, string.format("Found %d ROMs (%.1fs)...", count, elapsed))
+        end
+
+        -- Progress indicator every 100 files (for logs)
+        local current_time = love.timer.getTime()
+        if current_time - last_log_time >= 2.0 then  -- Log every 2 seconds
+            local elapsed = current_time - start_time
+            Logger.info(string.format("Scanning: %d files, %d ROMs, %.1fs elapsed", total_files, count, elapsed))
+            last_log_time = current_time
         end
 
         local filename = file_path:match("([^/]+)$")
@@ -143,7 +178,11 @@ local function scan_directory_recursive(dir_path, games, depth)
         end
     end
 
+    Logger.debug("Finished reading lines, total_files:", total_files, "count:", count)
+
     handle:close()
+
+    Logger.debug("Handle closed")
 
     Logger.info(string.format("Scan complete: %d total files, %d valid ROMs found", total_files, count))
 
@@ -151,21 +190,30 @@ local function scan_directory_recursive(dir_path, games, depth)
 end
 
 -- Load all games from ROM directories (recursive scan)
-function GameLibrary.load()
-    Logger.info("Loading game library...")
+-- Optional progress_callback(current, total, message) for UI updates
+function GameLibrary.load(progress_callback)
+    Logger.info("=== GameLibrary.load() START ===")
+    Logger.debug("GameLibrary.load() called")
 
     local start_time = love.timer.getTime()
     GameLibrary.games = {}
 
     -- Check if ROM root exists
     Logger.info("Checking ROM root directory:", Paths.roms_root)
+    Logger.debug("ROM root:", Paths.roms_root)
+
     local dir_exists = Paths.dir_exists(Paths.roms_root)
     Logger.info("Directory exists check result:", dir_exists)
+    Logger.debug("Directory exists:", dir_exists)
 
     -- Recursively scan the entire ROMS root directory
     if dir_exists then
         Logger.info("Starting recursive scan of:", Paths.roms_root)
-        GameLibrary.games = scan_directory_recursive(Paths.roms_root, {}, 0)
+        Logger.debug("About to call scan_directory_recursive...")
+
+        GameLibrary.games = scan_directory_recursive(Paths.roms_root, {}, 0, progress_callback)
+
+        Logger.debug("scan_directory_recursive returned")
         Logger.info("Recursive scan returned", #GameLibrary.games, "games")
     else
         Logger.error("ROM root directory does not exist:", Paths.roms_root)
@@ -195,6 +243,9 @@ function GameLibrary.load()
     for system, count in pairs(system_counts) do
         Logger.info(string.format("  %s: %d games", system:upper(), count))
     end
+
+    -- Load favorites from disk
+    GameLibrary.load_favorites()
 
     GameLibrary.is_loaded = true
     return GameLibrary.games
@@ -265,6 +316,108 @@ function GameLibrary.refresh()
     Logger.info("Refreshing game library...")
     GameLibrary.is_loaded = false
     return GameLibrary.load()
+end
+
+-- Toggle favorite status for a game
+-- Returns: success (bool), updated game (Game or nil)
+function GameLibrary.toggle_favorite(game_id)
+    for _, game in ipairs(GameLibrary.games) do
+        if game.id == game_id then
+            game.favorite = not game.favorite
+            Logger.info("Game favorite toggled:", game.title, "=>", game.favorite)
+
+            -- Save favorites to persistence
+            GameLibrary.save_favorites()
+
+            return true, game
+        end
+    end
+    Logger.warn("Game not found:", game_id)
+    return false, nil
+end
+
+-- Remove a game from the library (after deletion)
+function GameLibrary.remove_game(game_id)
+    local removed = false
+    for i, game in ipairs(GameLibrary.games) do
+        if game.id == game_id then
+            table.remove(GameLibrary.games, i)
+            removed = true
+            Logger.info("Removed game from library:", game.title)
+            break
+        end
+    end
+    return removed
+end
+
+-- Get all favorite games
+function GameLibrary.get_favorites()
+    local favorites = {}
+    for _, game in ipairs(GameLibrary.games) do
+        if game.favorite then
+            table.insert(favorites, game)
+        end
+    end
+    return favorites
+end
+
+-- Save favorites to disk
+function GameLibrary.save_favorites()
+    local Persistence = require("src.services.persistence")
+    local favorites_file = Paths.config_dir .. "favorites.json"
+
+    -- Create list of favorite game IDs
+    local favorite_ids = {}
+    for _, game in ipairs(GameLibrary.games) do
+        if game.favorite then
+            table.insert(favorite_ids, game.id)
+        end
+    end
+
+    -- Save to disk
+    local success, err = Persistence.save(favorites_file, favorite_ids)
+    if success then
+        Logger.info("Saved", #favorite_ids, "favorites to disk")
+    else
+        Logger.error("Failed to save favorites:", err)
+    end
+
+    return success
+end
+
+-- Load favorites from disk
+function GameLibrary.load_favorites()
+    local Persistence = require("src.services.persistence")
+    local favorites_file = Paths.config_dir .. "favorites.json"
+
+    -- Load favorite IDs from disk
+    local favorite_ids, err = Persistence.load(favorites_file)
+    if err then
+        Logger.info("No favorites file found (first run)")
+        return true
+    end
+
+    if not favorite_ids then
+        return true
+    end
+
+    -- Create lookup table for O(1) checking
+    local favorite_lookup = {}
+    for _, id in ipairs(favorite_ids) do
+        favorite_lookup[id] = true
+    end
+
+    -- Apply favorite status to games
+    local count = 0
+    for _, game in ipairs(GameLibrary.games) do
+        if favorite_lookup[game.id] then
+            game.favorite = true
+            count = count + 1
+        end
+    end
+
+    Logger.info("Loaded", count, "favorites from disk")
+    return true
 end
 
 return GameLibrary

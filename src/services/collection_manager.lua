@@ -53,6 +53,11 @@ function CollectionManager.init(collections_file)
     end
 
     Logger.info("Loaded", #CollectionManager.collections, "collections")
+
+    -- Skip loading muOS collections - we manage our own collections
+    -- CollectionManager.load_muos_collections()
+    Logger.debug("Skipping muOS collection loading (not needed)")
+
     return true
 end
 
@@ -71,13 +76,11 @@ function CollectionManager.create_default_collections()
         sort_order = "title_asc"
     })
 
-    -- Favorites
+    -- Favorites (user-managed, but system collection)
     local favorites = Collection.new({
         id = "favorites-system",
         name = "Favorites",
-        filters = {
-            {filter_type = "favorite", operator = "equals", value = true}
-        },
+        filters = {},  -- Special handling in browse scene
         filter_mode = "AND",
         is_system = true,
         icon = "star",
@@ -88,7 +91,7 @@ function CollectionManager.create_default_collections()
     local recent = Collection.new({
         id = "recent-system",
         name = "Recently Played",
-        filters = {},  -- Special handling in search engine
+        filters = {},  -- Special handling in browse scene
         filter_mode = "AND",
         is_system = true,
         icon = "clock",
@@ -277,6 +280,238 @@ function CollectionManager.update(id, updates)
 
     Logger.info("Updated collection:", collection.name)
     return true
+end
+
+-- Delete collection by ID (with safety check for system collections)
+-- Returns: success (bool), error message (string or nil)
+function CollectionManager.delete(collection_id)
+    local collection = CollectionManager.collections_by_id[collection_id]
+    
+    if not collection then
+        return false, "Collection not found"
+    end
+    
+    -- Prevent deletion of system collections
+    if collection.is_system then
+        return false, "Cannot delete system collection: " .. collection.name
+    end
+    
+    -- Remove from arrays
+    for i, col in ipairs(CollectionManager.collections) do
+        if col.id == collection_id then
+            table.remove(CollectionManager.collections, i)
+            break
+        end
+    end
+    
+    CollectionManager.collections_by_id[collection_id] = nil
+    
+    -- Save to disk
+    local ok, err = CollectionManager.save()
+    if not ok then
+        return false, err
+    end
+    
+    Logger.info("Deleted collection:", collection.name)
+    return true
+end
+
+-- Check if collection is system collection (immutable)
+function CollectionManager.is_system_collection(collection_id)
+    local collection = CollectionManager.collections_by_id[collection_id]
+    return collection and collection.is_system or false
+end
+
+-- Read muOS history to get recently played games
+-- Returns array of game ROM paths sorted by most recent first
+-- @return table: Array of {path, system, title, timestamp}
+function CollectionManager.read_muos_history()
+    local history_dir = "/mnt/mmc/MUOS/info/history"
+    local history_entries = {}
+    
+    -- Check if history directory exists
+    local check_dir = io.popen(string.format('test -d "%s" && echo "exists"', history_dir))
+    local exists = check_dir:read("*a"):match("exists")
+    check_dir:close()
+    
+    if not exists then
+        Logger.warn("muOS history directory not found:", history_dir)
+        return {}
+    end
+    
+    -- List all .cfg files in history directory, sorted by modification time (newest first)
+    local ls_cmd = string.format('ls -1t "%s"/*.cfg 2>/dev/null', history_dir)
+    local handle = io.popen(ls_cmd)
+    if not handle then
+        Logger.error("Failed to read history directory")
+        return {}
+    end
+    
+    local file_count = 0
+    for cfg_file in handle:lines() do
+        file_count = file_count + 1
+        
+        -- Read the .cfg file (3 lines: path, system, title)
+        local cfg = io.open(cfg_file, "r")
+        if cfg then
+            local rom_path = cfg:read("*line")
+            local system = cfg:read("*line")
+            local title = cfg:read("*line")
+            cfg:close()
+            
+            if rom_path and system and title then
+                -- Convert /mnt/union/ROMS to /mnt/mmc/ROMS to match Game Library
+                local local_path = rom_path:gsub("^/mnt/union/ROMS", "/mnt/mmc/ROMS")
+                
+                -- Get file modification time as timestamp
+                local stat_cmd = string.format('stat -c %%Y "%s" 2>/dev/null', cfg_file)
+                local stat_handle = io.popen(stat_cmd)
+                local timestamp = tonumber(stat_handle:read("*a")) or 0
+                stat_handle:close()
+                
+                table.insert(history_entries, {
+                    path = local_path,
+                    system = system,
+                    title = title,
+                    timestamp = timestamp
+                })
+            end
+        end
+        
+        -- Limit to 50 most recent games for performance
+        if file_count >= 50 then
+            break
+        end
+    end
+    handle:close()
+    
+    Logger.info("Read", #history_entries, "entries from muOS history")
+    return history_entries
+end
+
+-- Load existing collections from muOS collection directory
+-- Imports user-created collections from /mnt/mmc/MUOS/info/collection/
+function CollectionManager.load_muos_collections()
+    local muos_collect_dir = "/mnt/mmc/MUOS/info/collection"
+
+    Logger.debug("load_muos_collections() called")
+    Logger.info("Loading muOS collections from:", muos_collect_dir)
+
+    -- Check if directory exists
+    Logger.debug("Checking if directory exists...")
+
+    local check_dir = io.popen(string.format('test -d "%s" && echo "exists"', muos_collect_dir))
+    local exists = check_dir:read("*a"):match("exists")
+    check_dir:close()
+
+    Logger.debug("Directory exists:", tostring(exists ~= nil))
+
+    if not exists then
+        Logger.debug("No muOS collections directory, returning")
+        return  -- No muOS collections to load
+    end
+
+    -- List all directories in collection folder
+    local ls_cmd = string.format('ls -1d "%s"/*/ 2>/dev/null', muos_collect_dir)
+    Logger.debug("About to list directories with:", ls_cmd)
+
+    local handle = io.popen(ls_cmd)
+    Logger.debug("io.popen() returned, handle:", tostring(handle))
+
+    if not handle then
+        Logger.debug("handle is nil, returning")
+        return
+    end
+
+    local loaded_count = 0
+    Logger.debug("Starting to read collection directories...")
+
+    local collection_num = 0
+    for collection_path in handle:lines() do
+        collection_num = collection_num + 1
+        Logger.debug("Processing collection #" .. collection_num .. ":", collection_path)
+
+        -- Extract collection name from path (remove trailing slash)
+        local collection_name = collection_path:match("([^/]+)/$")
+        if not collection_name then
+            collection_name = collection_path:match("([^/]+)$")
+        end
+
+        Logger.debug("  Extracted name:", tostring(collection_name))
+
+        if collection_name then
+            -- Skip muOS system collections (managed by muOS itself)
+            local skip_collections = {
+                ["Favorites"] = true,
+                ["History"] = true,
+                ["Explore"] = true
+            }
+
+            if skip_collections[collection_name] then
+                Logger.debug("  Skipping system collection:", collection_name)
+                goto continue
+            end
+
+            -- Generate ID from name
+            local collection_id = "muos-" .. collection_name:lower():gsub("[^%w]", "-")
+            Logger.debug("  Generated ID:", collection_id)
+
+            -- Skip if already exists in our collections
+            if not CollectionManager.collections_by_id[collection_id] then
+                Logger.debug("  Skipping game count (performance optimization)")
+
+                -- Skip game count to avoid hanging on large collections or problematic files
+                -- The count will be calculated when the collection is actually browsed
+                local game_count = 0
+
+                Logger.debug("  Game count set to:", game_count, "(will be calculated on browse)")
+
+                -- Create a static collection (muOS collections are just folders, not filters)
+                Logger.debug("  Creating collection object...")
+
+                local collection = Collection.new({
+                    id = collection_id,
+                    name = collection_name,
+                    filters = {},
+                    filter_mode = "AND",
+                    is_system = false,
+                    is_muos_import = true,  -- Mark as imported from muOS
+                    icon = "folder",
+                    sort_order = "title_asc",
+                    game_ids = {}  -- Will be populated when browsing
+                })
+
+                Logger.debug("  Collection created:", tostring(collection ~= nil))
+
+                if collection then
+                    table.insert(CollectionManager.collections, collection)
+                    CollectionManager.collections_by_id[collection.id] = collection
+                    loaded_count = loaded_count + 1
+                    Logger.info(string.format("Loaded muOS collection: %s (%d games)", collection_name, game_count))
+                    Logger.debug("  Added to collections list")
+                end
+            else
+                Logger.debug("  Collection already exists, skipping")
+            end
+        else
+            Logger.debug("  Failed to extract collection name")
+        end
+
+        ::continue::
+        Logger.debug("  Finished processing collection #" .. collection_num)
+    end
+
+    Logger.debug("Finished reading collection directories, closing handle...")
+
+    handle:close()
+
+    Logger.debug("Handle closed, loaded_count:", loaded_count)
+
+    if loaded_count > 0 then
+        Logger.info("Loaded", loaded_count, "collections from muOS")
+    end
+
+    Logger.debug("load_muos_collections() completed")
 end
 
 return CollectionManager
