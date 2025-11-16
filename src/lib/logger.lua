@@ -26,7 +26,12 @@ local function log(level, level_name, ...)
     end
 
     local args = {...}
-    local message = table.concat(args, " ")
+    -- Convert all arguments to strings
+    local str_args = {}
+    for i, arg in ipairs(args) do
+        str_args[i] = tostring(arg)
+    end
+    local message = table.concat(str_args, " ")
     print(string.format("[%s] %s: %s", format_time(), level_name, message))
 end
 
