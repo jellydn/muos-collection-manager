@@ -360,7 +360,7 @@ function BrowseScene.handle_action(action)
             Logger.info("Creating delete dialog...")
             BrowseScene.export_dialog = Dialog.new({
                 title = "Delete Game?",
-                message = string.format("Delete '%s'?\n\nThis will permanently delete the ROM file from your device. This cannot be undone!", selected.title),
+                message = string.format("Delete '%s'?\n\nThis will permanently delete the ROM file.", selected.title),
                 type = Dialog.TYPE.CONFIRM,
                 options = {"Yes", "No"},
                 callback = function(choice)
@@ -383,8 +383,8 @@ function BrowseScene.handle_action(action)
                             
                             -- Show success message
                             BrowseScene.export_dialog = Dialog.new({
-                                title = "Game Deleted",
-                                message = string.format("'%s' has been deleted.", selected.title),
+                                title = "Deleted",
+                                message = string.format("'%s' deleted.", selected.title),
                                 type = Dialog.TYPE.INFO,
                                 options = {"OK"},
                                 callback = function()
@@ -398,7 +398,7 @@ function BrowseScene.handle_action(action)
                             -- Show error message
                             BrowseScene.export_dialog = Dialog.new({
                                 title = "Delete Failed",
-                                message = "Failed to delete the ROM file. It may be read-only or in use.",
+                                message = "Failed to delete ROM file.",
                                 type = Dialog.TYPE.INFO,
                                 options = {"OK"},
                                 callback = function()

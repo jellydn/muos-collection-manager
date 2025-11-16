@@ -8,9 +8,57 @@ local GameGrid = {}
 GameGrid.__index = GameGrid
 
 -- Global image cache (shared across all GameGrid instances)
+-- Cache structure: { [path] = image_object | error_string }
+--   - image_object (userdata): Successfully loaded image
+--   - error_string (string): Error message from failed load attempt
 GameGrid.image_cache = {}
 GameGrid.placeholder_image = nil  -- Fallback icon when box art not found
 GameGrid.catalogue_available = nil  -- nil = not checked, true = exists, false = missing
+
+-- Cache statistics
+GameGrid.cache_stats = {
+    hits = 0,          -- Successful cache retrievals
+    misses = 0,        -- Cache misses requiring disk load
+    success_loads = 0, -- Successful image loads from disk
+    failed_loads = 0   -- Failed image loads from disk
+}
+
+-- Clear image cache (useful for debugging box art issues)
+-- The cache automatically re-checks file existence for cached failures,
+-- but you can manually clear it to force a complete refresh
+function GameGrid.clear_image_cache()
+    local count = 0
+    for _ in pairs(GameGrid.image_cache) do count = count + 1 end
+    Logger.info("Box art cache cleared (" .. count .. " entries)")
+    Logger.info("Cache stats - Hits: " .. GameGrid.cache_stats.hits ..
+                ", Misses: " .. GameGrid.cache_stats.misses ..
+                ", Success: " .. GameGrid.cache_stats.success_loads ..
+                ", Failed: " .. GameGrid.cache_stats.failed_loads)
+    GameGrid.image_cache = {}
+    GameGrid.cache_stats = { hits = 0, misses = 0, success_loads = 0, failed_loads = 0 }
+end
+
+-- Get cache statistics
+function GameGrid.get_cache_stats()
+    local success_count = 0
+    local failure_count = 0
+    for _, cached in pairs(GameGrid.image_cache) do
+        if type(cached) == "userdata" then
+            success_count = success_count + 1
+        else
+            failure_count = failure_count + 1
+        end
+    end
+    return {
+        total_entries = success_count + failure_count,
+        cached_images = success_count,
+        cached_failures = failure_count,
+        hits = GameGrid.cache_stats.hits,
+        misses = GameGrid.cache_stats.misses,
+        success_loads = GameGrid.cache_stats.success_loads,
+        failed_loads = GameGrid.cache_stats.failed_loads
+    }
+end
 
 -- Create a new GameGrid
 function GameGrid.new(x, y, width, height)
@@ -223,16 +271,50 @@ function GameGrid:get_selected()
 end
 
 -- Load box art image for a game
+--
+-- Box art search strategy:
+--   1. Extract ROM filename without extension from game.file_path
+--   2. Map game.system to muOS catalogue folder name (e.g., "gbc" -> "Nintendo Game Boy Color")
+--   3. Try multiple system folder variations (with/without spaces around dashes)
+--   4. For each system folder, try filename variations:
+--      - Exact ROM filename: "Game (USA) (Rev 1).png"
+--      - Stripped filename: "Game.png" (removes region/revision tags)
+--   5. Load image using fallback methods:
+--      - Direct: love.graphics.newImage(path) - fast but may fail with restricted filesystem
+--      - FileData: io.open() → FileData → ImageData → Image - slower but works around restrictions
+--   6. Cache all results (success or failure) to avoid repeated filesystem checks
+--   7. Cached failures are automatically re-checked if files are added later
+--
+-- Search paths example for "Dr. Mario (Japan, USA) (En).zip" on FC system:
+--   /mnt/mmc/MUOS/info/catalogue/Nintendo NES - Famicom/box/Dr. Mario (Japan, USA) (En).png
+--   /mnt/mmc/MUOS/info/catalogue/Nintendo NES - Famicom/box/Dr. Mario.png
+--   /mnt/mmc/MUOS/info/catalogue/Nintendo NES-Famicom/box/Dr. Mario (Japan, USA) (En).png
+--   /mnt/mmc/MUOS/info/catalogue/Nintendo NES-Famicom/box/Dr. Mario.png
+--
+-- Cache performance:
+--   - Successful loads are cached in memory (instant retrieval on next access)
+--   - Failed loads are cached to avoid repeated filesystem checks
+--   - Cache auto-retries if files are added after initial failure
+--   - Use GameGrid.get_cache_stats() to view cache performance metrics
+--
+-- Debugging box art issues:
+--   - Check logs for "Box art search" messages showing all paths tried
+--   - Look for "✓✓✓ CACHE HIT" for successful cache retrievals
+--   - Verify catalogue exists: ls /mnt/mmc/MUOS/info/catalogue/
+--   - Check system folder name matches: ls /mnt/mmc/MUOS/info/catalogue/<SYSTEM>/box/
+--   - Clear cache with GameGrid.clear_image_cache() to retry failed loads
+--
 -- @param game Game: The game object
 -- @return Image|nil: Love2D image object or nil if not found
 function GameGrid:load_box_art(game)
+    local Paths = require("src.config.paths")
+
     if not game or not game.system or not game.title then
         return nil
     end
 
     -- Check if catalogue directory exists (only once)
     if GameGrid.catalogue_available == nil then
-        local Paths = require("src.config.paths")
         local catalogue_base = "/mnt/mmc/MUOS/info/catalogue"
         GameGrid.catalogue_available = Paths.dir_exists(catalogue_base)
 
@@ -308,12 +390,11 @@ function GameGrid:load_box_art(game)
     end
 
     -- Try each system folder variation
-    Logger.info("Box art search - ROM basename:", rom_basename)
-    Logger.info("Box art search - System variations:", table.concat(unique_systems, ", "))
+    Logger.debug("Box art search - ROM basename:", rom_basename)
+    Logger.debug("Box art search - System:", table.concat(unique_systems, ", "))
 
-    for _, catalogue_system in ipairs(unique_systems) do
+    for sys_idx, catalogue_system in ipairs(unique_systems) do
         local catalogue_dir = string.format("/mnt/mmc/MUOS/info/catalogue/%s/box", catalogue_system)
-        Logger.info("Checking directory:", catalogue_dir)
 
         -- Try file name variations:
         -- 1. Exact ROM filename (per muOS docs, this MUST match)
@@ -323,51 +404,99 @@ function GameGrid:load_box_art(game)
             (rom_basename:gsub("%s*%([^%)]*%)%s*", ""):gsub("%s*%[[^%]]*%]%s*", ""):gsub("%s+", " "):match("^%s*(.-)%s*$"))  -- Strip tags: "Contra Force.png"
         }
 
-        -- Log all paths we're going to try
-        Logger.info("Will try these paths:")
-        for i, filename in ipairs(file_variations) do
-            if filename and filename ~= "" then
-                local full_path = string.format("%s/%s.png", catalogue_dir, filename)
-                Logger.info("  [" .. i .. "] " .. full_path)
-            end
-        end
-
-        for _, filename in ipairs(file_variations) do
+        for file_idx, filename in ipairs(file_variations) do
             if filename and filename ~= "" then
                 local box_art_path = string.format("%s/%s.png", catalogue_dir, filename)
 
                 -- Check cache first
                 if GameGrid.image_cache[box_art_path] ~= nil then
-                    if GameGrid.image_cache[box_art_path] then
-                        Logger.info("Box art found in cache:", box_art_path)
-                        return GameGrid.image_cache[box_art_path]
+                    -- Cache hit - check if it's an image or an error record
+                    local cached = GameGrid.image_cache[box_art_path]
+                    if type(cached) == "userdata" then
+                        -- It's a cached image object - instant return!
+                        GameGrid.cache_stats.hits = GameGrid.cache_stats.hits + 1
+                        Logger.debug(string.format("Cache hit: %s", box_art_path))
+                        return cached
                     else
-                        Logger.debug("Cache says not found, skipping:", box_art_path)
-                    end
-                    -- Cache says it's missing, try next variation
-                else
-                    -- Try to load image
-                    Logger.info("Trying box art path:", box_art_path)
-                    local success, image_or_error = pcall(love.graphics.newImage, box_art_path)
-                    if success and image_or_error then
-                        -- Cache and return the image
-                        GameGrid.image_cache[box_art_path] = image_or_error
-                        Logger.info("✓ Box art loaded successfully!")
-                        return image_or_error
-                    else
-                        -- Cache miss (don't try again)
-                        GameGrid.image_cache[box_art_path] = false
-                        Logger.info("✗ Failed to load:", box_art_path)
-                        Logger.info("   Error:", tostring(image_or_error))
+                        -- It's a cached failure - but check if file exists now (might have been added)
+                        local file_exists = Paths.file_exists(box_art_path)
+                        Logger.debug(string.format("Cached failure, re-checking: %s", file_exists and "exists now" or "still missing"))
+
+                        if file_exists then
+                            -- File exists now! Clear cache and retry
+                            GameGrid.image_cache[box_art_path] = nil
+                            Logger.debug("Cache cleared, retrying...")
+                            -- Fall through to loading logic below
+                        else
+                            -- Still doesn't exist, skip to next variation
+                            goto continue_to_next_file
+                        end
                     end
                 end
-            else
-                Logger.debug("Empty filename variation, skipping")
+
+                -- Not in cache OR cache was cleared due to file now existing
+                if GameGrid.image_cache[box_art_path] == nil then
+                    -- Cache miss - need to load from disk
+                    GameGrid.cache_stats.misses = GameGrid.cache_stats.misses + 1
+
+                    -- Not in cache - check if file exists first
+                    local file_exists = Paths.file_exists(box_art_path)
+
+                    if file_exists then
+                        -- File exists, try to load it
+                        Logger.debug(string.format("Attempting to load: %s", box_art_path))
+
+                        -- Try direct path first (works if LÖVE has filesystem access)
+                        local success, image_or_error = pcall(love.graphics.newImage, box_art_path)
+
+                        if not success then
+                            -- Direct path failed, try loading via FileData (workaround for restricted filesystem)
+                            Logger.debug("Trying FileData fallback method...")
+
+                            local file = io.open(box_art_path, "rb")
+                            if file then
+                                local data = file:read("*all")
+                                file:close()
+
+                                -- Create FileData from the raw bytes
+                                local filedata_success, filedata = pcall(love.filesystem.newFileData, data, "temp.png")
+                                if filedata_success and filedata then
+                                    -- Create ImageData from FileData
+                                    local imagedata_success, imagedata = pcall(love.image.newImageData, filedata)
+                                    if imagedata_success and imagedata then
+                                        -- Create Image from ImageData
+                                        success, image_or_error = pcall(love.graphics.newImage, imagedata)
+                                    end
+                                end
+                            end
+                        end
+
+                        if success and image_or_error then
+                            -- Cache and return the image
+                            GameGrid.cache_stats.success_loads = GameGrid.cache_stats.success_loads + 1
+                            GameGrid.image_cache[box_art_path] = image_or_error
+                            Logger.info(string.format("Box art search - ✓ SUCCESS: %s", box_art_path))
+                            return image_or_error
+                        else
+                            -- Failed to load despite file existing - cache the error message
+                            GameGrid.cache_stats.failed_loads = GameGrid.cache_stats.failed_loads + 1
+                            local error_msg = tostring(image_or_error)
+                            GameGrid.image_cache[box_art_path] = error_msg
+                            Logger.debug(string.format("Load failed: %s", error_msg))
+                        end
+                    else
+                        -- File doesn't exist - cache as false
+                        GameGrid.cache_stats.failed_loads = GameGrid.cache_stats.failed_loads + 1
+                        GameGrid.image_cache[box_art_path] = "File does not exist"
+                    end
+                end
+
+                ::continue_to_next_file::
             end
         end
     end
 
-    Logger.info("No box art found for game")
+    Logger.debug("Box art not found")
     return nil
 end
 
@@ -406,12 +535,10 @@ function GameGrid:draw_info_panel(game)
     local content_width = panel_width - padding * 2
 
     -- Try to load box art
-    Logger.info("Attempting to load box art for:", game.title, "System:", game.system, "File:", game.file_path)
     local box_art = self:load_box_art(game)
     local art_height = 0
 
     if box_art then
-        Logger.info("Box art loaded successfully!")
         -- Draw box art centered at top
         local max_art_width = content_width
         local max_art_height = 300
@@ -428,7 +555,6 @@ function GameGrid:draw_info_panel(game)
 
         art_height = display_height + padding
     else
-        Logger.info("No box art available for this game")
         -- Draw placeholder message
         love.graphics.setColor(DisplayConfig.COLORS.text_dim)
         local no_art_msg = "[No box art]"
