@@ -40,9 +40,18 @@ function OnScreenKeyboard.new(x, y, width, height)
     self.selected_row = 1
     self.selected_col = 1
 
-    -- Key size
-    self.key_width = (width - (self.cols + 1) * 4) / self.cols
-    self.key_height = (height - (self.rows + 1) * 4) / self.rows
+    -- Key size with minimum constraints
+    local calculated_key_width = (width - (self.cols + 1) * 4) / self.cols
+    local calculated_key_height = (height - (self.rows + 1) * 4) / self.rows
+
+    -- Ensure minimum key size to prevent rendering issues
+    self.key_width = math.max(20, calculated_key_width)
+    self.key_height = math.max(20, calculated_key_height)
+
+    if calculated_key_width < 20 or calculated_key_height < 20 then
+        Logger.warn("Keyboard dimensions too small. Requested:", width, "x", height,
+                    "Key size:", calculated_key_width, "x", calculated_key_height)
+    end
 
     self.visible = false
 
@@ -96,12 +105,21 @@ function OnScreenKeyboard:draw()
             local label = key
             -- No need for SPACE label since we removed space key
 
-            local text_width = love.graphics.getFont():getWidth(label)
-            local text_height = love.graphics.getFont():getHeight()
-            local text_x = key_x + (self.key_width - text_width) / 2
-            local text_y = key_y + (self.key_height - text_height) / 2
+            local font = love.graphics.getFont()
+            local text_width = font:getWidth(label)
+            local text_height = font:getHeight()
 
-            love.graphics.print(label, text_x, text_y)
+            -- Ensure text fits within key bounds (clamp position to prevent overflow)
+            local text_x = key_x + math.max(0, (self.key_width - text_width) / 2)
+            local text_y = key_y + math.max(0, (self.key_height - text_height) / 2)
+
+            -- Only draw if text will fit reasonably within the key
+            if text_width <= self.key_width + 2 and text_height <= self.key_height + 2 then
+                love.graphics.print(label, text_x, text_y)
+            else
+                -- Text too large, draw a placeholder
+                love.graphics.print("•", key_x + self.key_width / 2 - 2, key_y + self.key_height / 2 - font:getHeight() / 2)
+            end
         end
     end
 
