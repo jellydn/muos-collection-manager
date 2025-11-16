@@ -153,7 +153,7 @@
 - [x] T061 [US3] Integrate FilterPanel into SearchScene (L button to open per quickstart.md)
 - [x] T062 [US3] Update SearchScene to combine name search with active filters
 - [x] T063 [US3] Update CollectionManager to save multi-filter collections
-- [ ] T064 [US3] Handle edge case: 500+ matching games with virtual scrolling
+- [x] T064 [US3] Handle edge case: 500+ matching games with virtual scrolling
 
 **Checkpoint**: All user stories should now be independently functional
 
