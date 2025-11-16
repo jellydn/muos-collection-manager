@@ -18,7 +18,7 @@ function Game.new(data)
     self.genre = data.genre or {"Unknown"}
     self.year = data.year  -- Can be nil
     self.player_count = data.player_count or 1
-    self.favorite = data.favorite or false
+    -- self.favorite = data.favorite or false  -- DISABLED: Favorites feature
     self.play_count = data.play_count or 0
     self.last_played = data.last_played  -- Can be nil
 
@@ -58,7 +58,7 @@ function Game:to_table()
         genre = self.genre,
         year = self.year,
         player_count = self.player_count,
-        favorite = self.favorite,
+        -- favorite = self.favorite,  -- DISABLED: Favorites feature
         play_count = self.play_count,
         last_played = self.last_played
     }
