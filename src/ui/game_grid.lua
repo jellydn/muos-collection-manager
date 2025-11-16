@@ -509,6 +509,10 @@ function GameGrid:draw_info_panel(game)
 
     Logger.info("Drawing info panel for:", game.title)
 
+    -- Enrich game with muOS tracking data
+    local MuOSTracker = require("src.services.muos_tracker")
+    game = MuOSTracker.enrich_game(game)
+
     -- Panel configuration
     local panel_width = math.min(500, DisplayConfig.width - 40)
     local panel_height = math.min(600, DisplayConfig.height - 40)
@@ -599,6 +603,39 @@ function GameGrid:draw_info_panel(game)
     if game.play_count and game.play_count > 0 then
         love.graphics.print("Played: " .. game.play_count .. " times", content_x, info_y)
         info_y = info_y + 25
+    end
+
+    -- muOS Tracking Stats (if available)
+    if game.muos_launches and game.muos_launches > 0 then
+        love.graphics.setColor(DisplayConfig.COLORS.text)
+        love.graphics.print("─────────────", content_x, info_y)
+        info_y = info_y + 25
+
+        love.graphics.setColor(DisplayConfig.COLORS.text_dim)
+
+        -- Launches
+        love.graphics.print("Launches: " .. game.muos_launches, content_x, info_y)
+        info_y = info_y + 25
+
+        -- Total playtime
+        if game.muos_total_time and game.muos_total_time > 0 then
+            local MuOSTracker = require("src.services.muos_tracker")
+            love.graphics.print("Total time: " .. MuOSTracker.format_playtime(game.muos_total_time), content_x, info_y)
+            info_y = info_y + 25
+
+            -- Average session
+            if game.muos_avg_time and game.muos_avg_time > 0 then
+                love.graphics.print("Avg session: " .. MuOSTracker.format_playtime(game.muos_avg_time), content_x, info_y)
+                info_y = info_y + 25
+            end
+        end
+
+        -- Last played
+        if game.muos_last_played then
+            local MuOSTracker = require("src.services.muos_tracker")
+            love.graphics.print("Last played: " .. MuOSTracker.format_last_played(game.muos_last_played), content_x, info_y)
+            info_y = info_y + 25
+        end
     end
 
     -- Favorite status
