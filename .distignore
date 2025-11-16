@@ -12,6 +12,7 @@ tests/
 specs/
 .specify/
 .vscode/
+.claude/
 doc/
 docs/
 
@@ -26,6 +27,7 @@ _.muxapp
 
 Makefile
 run-test.sh
+scripts/
 
 # Temporary files
 
