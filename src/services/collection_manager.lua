@@ -13,6 +13,15 @@ CollectionManager.collections = {}  -- Array of Collection objects
 CollectionManager.collections_by_id = {}  -- Map of id → Collection for fast lookup
 CollectionManager.collections_file = nil  -- Will be set during init
 
+-- Helper to count map size
+function CollectionManager.count_map_size(map)
+    local count = 0
+    for _ in pairs(map) do
+        count = count + 1
+    end
+    return count
+end
+
 -- Initialize CollectionManager (loads from disk)
 -- @param collections_file string: Path to collections.json (optional, defaults to muOS path)
 -- @return boolean, error
@@ -47,12 +56,14 @@ function CollectionManager.init(collections_file)
         if collection then
             table.insert(CollectionManager.collections, collection)
             CollectionManager.collections_by_id[collection.id] = collection
+            Logger.debug("Registered collection in map:", collection.name, "id:", collection.id)
         else
             Logger.warn("Failed to parse collection:", parse_err)
         end
     end
 
     Logger.info("Loaded", #CollectionManager.collections, "collections")
+    Logger.debug("collections_by_id map size:", CollectionManager.count_map_size(CollectionManager.collections_by_id))
 
     -- Skip loading muOS collections - we manage our own collections
     -- CollectionManager.load_muos_collections()
