@@ -62,12 +62,34 @@ function SearchBar:draw()
         love.graphics.setColor(DisplayConfig.COLORS.text_dim)
         love.graphics.print(self.placeholder, text_x, text_y)
     else
-        -- Show query
-        love.graphics.print(self.query, text_x, text_y)
+        -- Show query with text overflow handling
+        local font = love.graphics.getFont()
+        local available_width = self.width - DisplayConfig.SIZES.padding * 2 - 10 -- Reserve space for cursor
+        local text_width = font:getWidth(self.query)
+        local display_text = self.query
+
+        -- If text is too wide, scroll to show the end (where user is typing)
+        if text_width > available_width then
+            -- Start from the end and work backwards until we fit
+            local chars = {}
+            local current_width = 0
+            for i = #self.query, 1, -1 do
+                local char = self.query:sub(i, i)
+                local char_width = font:getWidth(char)
+                if current_width + char_width > available_width then
+                    break
+                end
+                table.insert(chars, 1, char)
+                current_width = current_width + char_width
+            end
+            display_text = table.concat(chars)
+        end
+
+        love.graphics.print(display_text, text_x, text_y)
 
         -- Draw cursor
         if self.focused and self.cursor_visible then
-            local cursor_x = text_x + love.graphics.getFont():getWidth(self.query)
+            local cursor_x = text_x + font:getWidth(display_text)
             love.graphics.setColor(DisplayConfig.COLORS.primary)
             love.graphics.rectangle("fill", cursor_x, text_y, 2, DisplayConfig.SIZES.font_size_large)
         end
