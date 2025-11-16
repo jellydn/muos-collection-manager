@@ -20,20 +20,43 @@ InputConfig.ACTIONS = {
     SHOULDER_R = "shoulder_r"  -- R button
 }
 
--- Keyboard mappings (for development/testing)
+-- Keyboard mappings (for development/testing on Mac)
 InputConfig.keyboard = {
+    -- Arrow keys for navigation
     up = "up",
     down = "down",
     left = "left",
     right = "right",
-    ["return"] = "confirm",
-    escape = "cancel",
-    space = "menu",
-    tab = "filter",
-    f = "favorite",
-    delete = "delete",
-    q = "shoulder_l",
-    e = "shoulder_r"
+    
+    -- Primary actions
+    ["return"] = "confirm",      -- Enter = A button (confirm)
+    space = "confirm",           -- Space = A button (confirm alternative)
+    escape = "cancel",           -- ESC = B button (back/cancel)
+    b = "cancel",                -- B = B button (back/cancel alternative)
+    
+    -- Menu actions
+    m = "menu",                  -- M = START button (menu)
+    tab = "filter",              -- Tab = SELECT button (filter panel)
+    l = "shoulder_l",            -- L = L shoulder (filter panel)
+    r = "shoulder_r",            -- R = R shoulder (AND/OR toggle)
+    
+    -- Additional actions
+    f = "favorite",              -- F = Y button (favorite)
+    y = "favorite",              -- Y = Y button (favorite alternative)
+    x = "delete",                -- X = X button (delete)
+    backspace = "delete",        -- Backspace = delete alternative
+    
+    -- Number keys for quick selection (1-9)
+    ["1"] = "quick_select_1",
+    ["2"] = "quick_select_2",
+    ["3"] = "quick_select_3",
+    ["4"] = "quick_select_4",
+    ["5"] = "quick_select_5",
+    
+    -- Debug/testing keys
+    f1 = "debug_toggle",         -- F1 = toggle debug mode
+    f2 = "fps_toggle",           -- F2 = toggle FPS counter
+    f5 = "refresh",              -- F5 = refresh library
 }
 
 -- Gamepad button mappings (Xbox/PS controller layout)

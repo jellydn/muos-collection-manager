@@ -2,14 +2,15 @@
 -- Constitution: II. Resource Efficiency (optimized for embedded displays)
 
 local DisplayConfig = {}
--- TODO: Support TrimUI Brick and Smart Pro devices
 -- Common muOS display resolutions
 DisplayConfig.RESOLUTIONS = {
     RG35XX = {width = 640, height = 480, aspect = "4:3"},
     RG35XX_PLUS = {width = 640, height = 480, aspect = "4:3"},
     RG353P = {width = 640, height = 480, aspect = "4:3"},
     ANBERNIC_351V = {width = 640, height = 480, aspect = "4:3"},
-    MIYOO_MINI = {width = 320, height = 240, aspect = "4:3"}
+    MIYOO_MINI = {width = 320, height = 240, aspect = "4:3"},
+    TRIMUI_SMART_PRO = {width = 1280, height = 720, aspect = "16:9"},
+    TRIMUI_BRICK = {width = 1280, height = 720, aspect = "16:9"}
 }
 
 -- Current display settings (detected at runtime)
@@ -57,12 +58,26 @@ function DisplayConfig.init()
         DisplayConfig.aspect_ratio = string.format("%.2f:1", ratio)
     end
 
-    -- Calculate scale factor (relative to 640×480 baseline)
-    DisplayConfig.scale = DisplayConfig.width / 640
+    -- Calculate scale factor based on aspect ratio
+    -- For 4:3 displays: scale based on width (baseline 640x480)
+    -- For 16:9 displays: scale based on height (baseline 720p = 1280x720)
+    if DisplayConfig.aspect_ratio == "16:9" then
+        -- Scale based on height for widescreen displays (720p baseline)
+        DisplayConfig.scale = DisplayConfig.height / 720
+    else
+        -- Scale based on width for 4:3 displays (640x480 baseline)
+        DisplayConfig.scale = DisplayConfig.width / 640
+    end
 
     -- Scale UI elements
     for key, value in pairs(DisplayConfig.SIZES) do
         DisplayConfig.SIZES[key] = math.floor(value * DisplayConfig.scale)
+    end
+    
+    -- Optional: log scale factor if logger is available
+    if package.loaded["src.lib.logger"] then
+        local Logger = require("src.lib.logger")
+        Logger.info("Display scale factor:", string.format("%.2f", DisplayConfig.scale))
     end
 end
 
