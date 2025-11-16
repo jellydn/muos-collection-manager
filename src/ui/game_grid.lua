@@ -189,10 +189,10 @@ function GameGrid:draw_list_item(game, item_y, is_selected)
     -- Favorite star icon (left of title)
     local title_x = self.x + padding
     if game.favorite then
-        -- Draw filled star (★)
+        -- Draw favorite indicator [F]
         love.graphics.setColor(1.0, 0.8, 0.0)  -- Gold color
-        love.graphics.print("★", title_x, text_y)
-        title_x = title_x + 20  -- Add space after star
+        love.graphics.print("[F]", title_x, text_y)
+        title_x = title_x + 25  -- Add space after indicator
         
         -- Restore text color
         if is_selected then
@@ -641,7 +641,7 @@ function GameGrid:draw_info_panel(game)
     -- Favorite status
     if game.favorite then
         love.graphics.setColor(1.0, 0.8, 0.0)
-        love.graphics.print("★ Favorite", content_x, info_y)
+        love.graphics.print("Favorite", content_x, info_y)
         info_y = info_y + 25
     end
 
