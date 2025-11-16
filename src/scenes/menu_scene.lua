@@ -206,31 +206,42 @@ function MenuScene.delete_selected_collection()
         return
     end
 
+    -- Capture collection details for the callback
+    local collection_id = collection.id
+    local collection_name = collection.name
+    local deletion_index = MenuScene.selected_index
+
     -- Show confirmation dialog
-    Logger.debug("Creating delete dialog for:", collection.name)
+    Logger.debug("Creating delete dialog for:", collection_name, "at index:", deletion_index)
     MenuScene.delete_dialog = Dialog.new({
         title = "Delete Collection",
-        message = "Delete '" .. collection.name .. "'?\nThis cannot be undone.",
+        message = "Delete '" .. collection_name .. "'?\nThis cannot be undone.",
         type = Dialog.TYPE.CONFIRM,
         options = {"Yes", "No"},
         callback = function(choice)
-            Logger.debug("Delete dialog callback - choice:", choice)
+            Logger.debug("Delete dialog callback - choice:", choice, "for collection:", collection_name)
             if choice == "yes" then
-                local ok, err = CollectionManager.delete(collection.id)
+                local ok, err = CollectionManager.delete(collection_id)
 
                 if not ok then
                     Logger.error("Failed to delete collection:", err)
                 else
-                    Logger.info("Deleted collection:", collection.name)
+                    Logger.info("Deleted collection:", collection_name)
 
                     -- Reload collections
                     MenuScene.collections = CollectionManager.get_sorted()
                     Logger.debug("Reloaded collections, new count:", #MenuScene.collections)
 
-                    -- Adjust selection
-                    if MenuScene.selected_index > #MenuScene.collections then
+                    -- Smart selection adjustment:
+                    -- If we deleted the last item, move selection up
+                    -- Otherwise keep selection at same index (which now shows next collection)
+                    if deletion_index > #MenuScene.collections then
                         MenuScene.selected_index = math.max(1, #MenuScene.collections)
                         Logger.debug("Adjusted selected_index to:", MenuScene.selected_index)
+                    else
+                        -- Keep current index, but ensure it's valid
+                        MenuScene.selected_index = math.min(deletion_index, #MenuScene.collections)
+                        Logger.debug("Kept selected_index at:", MenuScene.selected_index)
                     end
                 end
             end
