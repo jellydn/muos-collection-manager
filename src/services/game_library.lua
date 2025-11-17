@@ -305,19 +305,24 @@ function GameLibrary.get_platforms()
         gba = "Nintendo Game Boy Advance",
         n64 = "Nintendo N64",
         nds = "Nintendo DS",
-        -- PlayStation
+        -- Sony
+        ps1 = "Sony PlayStation",
+        ps = "Sony PlayStation",
         psx = "Sony PlayStation",
-        ps2 = "Sony PlayStation 2",
-        psp = "Sony PSP",
+        psp = "Sony PlayStation Portable",
         -- Sega
-        genesis = "Sega Genesis - Mega Drive",
-        md = "Sega Genesis - Mega Drive",
+        genesis = "Sega Mega Drive-Genesis",
+        md = "Sega Mega Drive-Genesis",
+        mastersystem = "Sega Master System",
+        ms = "Sega Master System",
         sms = "Sega Master System",
+        gamegear = "Sega Game Gear",
         gg = "Sega Game Gear",
-        saturn = "Sega Saturn",
+        dreamcast = "Sega Dreamcast",
         dc = "Sega Dreamcast",
         -- Arcade
         arcade = "Arcade",
+        fbneo = "Arcade",
         mame = "Arcade",
         fba = "Arcade",
         -- Atari
