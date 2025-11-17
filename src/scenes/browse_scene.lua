@@ -19,7 +19,8 @@ BrowseScene.games = {}
 BrowseScene.game_grid = nil
 BrowseScene.export_dialog = nil  -- Success/error message dialog
 BrowseScene.show_info_panel = false  -- Game info panel (menu button)
-BrowseScene.info_panel_game = nil  -- Cached enriched game for info panel
+BrowseScene.info_panel_game = nil  -- Cached game for info panel
+BrowseScene.info_panel_box_art = nil  -- Cached box art image for info panel
 
 -- Enter scene
 -- @param data table: {collection = Collection}
@@ -155,7 +156,7 @@ function BrowseScene.draw()
 
     -- Draw info panel if active (menu button pressed)
     if BrowseScene.show_info_panel and BrowseScene.info_panel_game then
-        BrowseScene.game_grid:draw_info_panel(BrowseScene.info_panel_game)
+        BrowseScene.game_grid:draw_info_panel(BrowseScene.info_panel_game, BrowseScene.info_panel_box_art)
     end
 
     -- Draw help text (only if dialog not open)
@@ -205,6 +206,7 @@ function BrowseScene.handle_action(action)
         if action == "cancel" then
             BrowseScene.show_info_panel = false
             BrowseScene.info_panel_game = nil
+            BrowseScene.info_panel_box_art = nil
         end
         return
     end
@@ -250,6 +252,8 @@ function BrowseScene.handle_action(action)
         if selected then
             Logger.info("A pressed - opening info panel for:", selected.title)
             BrowseScene.info_panel_game = selected
+            -- Load box art once when opening panel (not every frame)
+            BrowseScene.info_panel_box_art = BrowseScene.game_grid:load_box_art(selected)
             BrowseScene.show_info_panel = true
         end
 

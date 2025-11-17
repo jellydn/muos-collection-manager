@@ -26,7 +26,8 @@ SearchScene.keyboard_mode = false
 SearchScene.loading_indicator_visible = false
 SearchScene.search_start_time = 0
 SearchScene.show_info_panel = false
-SearchScene.info_panel_game = nil  -- Cached enriched game for info panel
+SearchScene.info_panel_game = nil  -- Cached game for info panel
+SearchScene.info_panel_box_art = nil  -- Cached box art image for info panel
 
 -- Enter scene
 function SearchScene.enter(data)
@@ -162,7 +163,7 @@ function SearchScene.draw()
 
     -- Draw game info panel if active
     if SearchScene.show_info_panel and SearchScene.info_panel_game then
-        SearchScene.game_grid:draw_info_panel(SearchScene.info_panel_game)
+        SearchScene.game_grid:draw_info_panel(SearchScene.info_panel_game, SearchScene.info_panel_box_art)
     end
 
     -- Draw help text
@@ -220,6 +221,7 @@ function SearchScene.handle_action(action)
         if action == "cancel" then
             SearchScene.show_info_panel = false
             SearchScene.info_panel_game = nil
+            SearchScene.info_panel_box_art = nil
         end
         return
     end
@@ -286,6 +288,8 @@ function SearchScene.handle_action(action)
             if selected then
                 Logger.info("A pressed - opening info panel for:", selected.title)
                 SearchScene.info_panel_game = selected
+                -- Load box art once when opening panel (not every frame)
+                SearchScene.info_panel_box_art = SearchScene.game_grid:load_box_art(selected)
                 SearchScene.show_info_panel = true
             end
         end

@@ -501,13 +501,13 @@ function GameGrid:load_box_art(game)
 end
 
 -- Draw game info panel with box art (called when user presses menu button)
-function GameGrid:draw_info_panel(game)
+-- @param game table: Game object with metadata
+-- @param box_art userdata|nil: Pre-loaded box art image (loaded once by scene, not every frame)
+function GameGrid:draw_info_panel(game, box_art)
     if not game then
         Logger.warn("draw_info_panel: no game provided")
         return
     end
-
-    -- Game is already enriched with muOS tracking data by the scene before calling this function
 
     -- Panel configuration
     local panel_width = math.min(500, DisplayConfig.width - 40)
@@ -534,8 +534,7 @@ function GameGrid:draw_info_panel(game)
     local content_y = panel_y + padding
     local content_width = panel_width - padding * 2
 
-    -- Try to load box art
-    local box_art = self:load_box_art(game)
+    -- Use pre-loaded box art (passed in from scene, loaded once when panel opened)
     local art_height = 0
 
     if box_art then
