@@ -13,7 +13,7 @@ local LAYOUT_LOWERCASE = {
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
     {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
     {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"},
-    {"@", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", ",", "?", "DEL"}
+    {"@", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", ",", "?"}
 }
 
 local LAYOUT_UPPERCASE = {
@@ -21,7 +21,7 @@ local LAYOUT_UPPERCASE = {
     {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
     {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
     {"CAPS", "Z", "X", "C", "V", "B", "N", "M", ".", "DEL"},
-    {"@", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", ",", "?", "DEL"}
+    {"#", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "!", "?"}
 }
 
 -- Create a new OnScreenKeyboard
