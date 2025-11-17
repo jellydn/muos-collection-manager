@@ -507,8 +507,6 @@ function GameGrid:draw_info_panel(game)
         return
     end
 
-    Logger.info("Drawing info panel for:", game.title)
-
     -- Game is already enriched with muOS tracking data by the scene before calling this function
 
     -- Panel configuration
