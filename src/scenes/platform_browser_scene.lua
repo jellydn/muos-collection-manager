@@ -93,16 +93,6 @@ function PlatformBrowserScene.draw()
     love.graphics.setColor(0.5, 0.5, 0.5)
     local footer_y = screen_h - 30
     love.graphics.printf("A: Select  |  B: Back", 0, footer_y, screen_w, "center")
-    
-    -- Scrollbar indicator if needed
-    if #PlatformBrowserScene.platforms > ITEMS_PER_PAGE then
-        local total_height = #PlatformBrowserScene.platforms * ITEM_HEIGHT
-        local viewport_height = screen_h - 140
-        local scrollbar_h = (viewport_height / total_height) * viewport_height
-        local scrollbar_y = 80 + (PlatformBrowserScene.scroll_offset / total_height) * viewport_height
-        love.graphics.setColor(0.6, 0.6, 0.6)
-        love.graphics.rectangle("fill", screen_w - 10, scrollbar_y, 5, scrollbar_h)
-    end
 end
 
 function PlatformBrowserScene.keypressed(key, scancode, isrepeat)
