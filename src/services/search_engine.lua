@@ -59,7 +59,6 @@ function SearchEngine.search(query)
     end
 
     local elapsed = (love.timer.getTime() - start_time) * 1000
-    Logger.debug(string.format("Search '%s': %d results in %.2fms", query, #results, elapsed))
 
     -- Performance warning if search is slow
     if elapsed > 100 and #SearchEngine.index.all_games >= 1000 then
@@ -89,14 +88,12 @@ function SearchEngine.query(query, dt)
     -- Execute search after debounce delay
     if SearchEngine.debounce_timer >= SearchEngine.debounce_delay then
         SearchEngine.last_results = SearchEngine.search(SearchEngine.pending_query)
-        -- Reset timer to prevent repeated execution until query changes
-        SearchEngine.debounce_timer = SearchEngine.debounce_delay
+        -- Set timer to infinity to prevent repeated execution until query changes
+        SearchEngine.debounce_timer = math.huge
         return SearchEngine.last_results
     end
 
     -- Return last results while debouncing
-    Logger.debug(string.format("Debouncing... (%.3fs / %.3fs)",
-        SearchEngine.debounce_timer, SearchEngine.debounce_delay))
     return SearchEngine.last_results
 end
 
