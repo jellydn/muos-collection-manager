@@ -1,6 +1,7 @@
 -- Simple logger utility for debugging and performance tracking
 -- Constitution: I. Performance-First (profiling support)
 
+local Shell = require("src.lib.shell")
 local Logger = {}
 
 -- Log levels
@@ -26,7 +27,7 @@ local function is_muos_device()
     }
     
     for _, path in ipairs(muos_paths) do
-        local check = io.popen(string.format('test -d "%s" && echo "1"', path))
+        local check = Shell.popen('test -d %s && echo "1"', path)
         if check then
             local result = check:read("*a")
             check:close()

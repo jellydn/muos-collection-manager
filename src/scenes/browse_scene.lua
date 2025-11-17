@@ -13,6 +13,18 @@ local Dialog = require("src.ui.dialog")
 
 local BrowseScene = {}
 
+-- Cache fonts at module scope to avoid per-frame allocations
+local title_font = nil
+local body_font = nil
+
+-- Initialize cached fonts (called after DisplayConfig.init)
+local function init_fonts()
+    if DisplayConfig.SIZES.font_size_large and DisplayConfig.SIZES.font_size_medium then
+        title_font = love.graphics.newFont(DisplayConfig.SIZES.font_size_large)
+        body_font = love.graphics.newFont(DisplayConfig.SIZES.font_size_medium)
+    end
+end
+
 -- Scene state
 BrowseScene.collection = nil
 BrowseScene.games = {}
@@ -74,7 +86,9 @@ function BrowseScene.load_games()
 
     else
         -- Custom collection - apply ALL filters
-        if #BrowseScene.collection.filters == 0 then
+        -- Defensively handle nil filters (treat as empty)
+        local filters = BrowseScene.collection.filters or {}
+        if #filters == 0 then
             -- No filters - show all games
             BrowseScene.games = SearchEngine.search("")
         else
@@ -87,7 +101,7 @@ function BrowseScene.load_games()
             local other_filters = {}
             
             -- Separate name filter from others
-            for _, f in ipairs(BrowseScene.collection.filters) do
+            for _, f in ipairs(filters) do
                 if f.filter_type == "name" then
                     name_query = f.value or ""
                 else
@@ -133,12 +147,21 @@ end
 
 -- Draw scene
 function BrowseScene.draw()
+    -- Initialize fonts if not already cached
+    if not title_font or not body_font then
+        init_fonts()
+    end
+    
     -- Draw collection name as title
     love.graphics.setColor(DisplayConfig.COLORS.text)
-    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_large))
+    if title_font then
+        love.graphics.setFont(title_font)
+    end
     local title = BrowseScene.collection and BrowseScene.collection.name or "Browse"
     love.graphics.print(title, DisplayConfig.SIZES.margin, DisplayConfig.SIZES.margin)
-    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_medium))
+    if body_font then
+        love.graphics.setFont(body_font)
+    end
 
     -- Draw game count
     love.graphics.setColor(DisplayConfig.COLORS.text_dim)
@@ -343,11 +366,10 @@ function BrowseScene.handle_action(action)
                     if choice == "yes" then
                         Logger.info("Deleting game:", selected.title, selected.file_path)
                         
-                        -- Delete the ROM file
-                        local delete_cmd = string.format('rm -f "%s"', selected.file_path)
-                        local result = os.execute(delete_cmd)
+                        -- Delete the ROM file using os.remove (safer than shell command)
+                        local ok, err = os.remove(selected.file_path)
                         
-                        if result == 0 or result == true then
+                        if ok then
                             Logger.info("Successfully deleted:", selected.file_path)
                             
                             -- Remove from game library
@@ -368,7 +390,7 @@ function BrowseScene.handle_action(action)
                             })
                             BrowseScene.export_dialog:open()
                         else
-                            Logger.error("Failed to delete:", selected.file_path)
+                            Logger.error("Failed to delete ROM file:", selected.file_path, err)
                             
                             -- Show error message
                             BrowseScene.export_dialog = Dialog.new({

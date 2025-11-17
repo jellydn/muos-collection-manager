@@ -36,10 +36,11 @@ dist:
 	fi
 
 	# Copy files excluding ignored patterns
-	@rsync -a . $(DIST_DIR)/$(CONTENT_DIR) \
+	@rsync -a \
 		--exclude-from=$(DISTIGNORE) \
 		--exclude=$(DIST_DIR) \
-		--delete-excluded
+		--delete-excluded \
+		. $(DIST_DIR)/$(CONTENT_DIR)
 
 	# Create glyph directory for muOS launcher icon
 	@mkdir -p $(DIST_DIR)/glyph/muxapp

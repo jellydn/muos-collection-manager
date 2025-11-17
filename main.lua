@@ -166,9 +166,8 @@ local function complete_initialization()
 	if not success then
 		Logger.error("Failed to initialize application:", err)
 		Logger.error(debug.traceback())
-		-- Show error on loading screen
+		-- Show error on loading screen and stay on loading scene
 		LoadingScene.set_progress(0, 1, "Error", tostring(err))
-		app.is_loading = false
 	end
 end
 

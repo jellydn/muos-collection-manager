@@ -77,16 +77,12 @@ local function scan_directory_recursive(dir_path, games, depth, progress_callbac
 
     -- Use find command for recursive scanning (much faster than manual recursion)
     -- -type f: files only, -not -path: exclude hidden directories
-    local find_cmd = string.format(
-        'find "%s" -type f -not -path "*/\\.*" 2>&1',
-        dir_path
-    )
-
-    Logger.info("Executing find command:", find_cmd)
+    Logger.info("Scanning directory:", dir_path)
     Logger.debug("About to execute find command...")
 
     local start_time = love.timer.getTime()
-    local handle = io.popen(find_cmd)
+    local Shell = require("src.lib.shell")
+    local handle = Shell.popen('find %s -type f -not -path "*/\\.*" 2>&1', dir_path)
 
     Logger.debug("io.popen() returned, handle:", tostring(handle))
 
@@ -219,7 +215,8 @@ function GameLibrary.load(progress_callback)
         Logger.error("ROM root directory does not exist:", Paths.roms_root)
         -- Try to list what's in /mnt/mmc to help debug
         Logger.info("Attempting to list /mnt/mmc contents...")
-        local handle = io.popen("ls -la /mnt/mmc 2>&1")
+        local Shell = require("src.lib.shell")
+        local handle = Shell.popen("ls -la %s 2>&1", "/mnt/mmc")
         if handle then
             for line in handle:lines() do
                 Logger.info("  " .. line)

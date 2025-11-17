@@ -20,8 +20,8 @@ docs/
 # Build artifacts
 
 dist/
-_.zip
-_.muxapp
+*.zip
+*.muxapp
 .distignore
 
 # Root-only dev files not needed on device
@@ -32,11 +32,11 @@ scripts/
 
 # Temporary files
 
-_.tmp
-_.log
-_.swp
-_.swo
-\*~
+*.tmp
+*.log
+*.swp
+*.swo
+*~
 
 # macOS
 
@@ -51,4 +51,4 @@ _.swo
 # Test data
 
 /tmp/
-_.test._
+*.test.*

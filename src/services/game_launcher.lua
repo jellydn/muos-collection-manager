@@ -3,6 +3,7 @@
 
 local Logger = require("src.lib.logger")
 local Paths = require("src.config.paths")
+local Shell = require("src.lib.shell")
 
 local GameLauncher = {}
 
@@ -36,10 +37,10 @@ function GameLauncher.export_to_muos(collection, games)
     Logger.info("Games to export:", #games)
     
     -- Create collection directory (and parent if needed)
-    os.execute(string.format('mkdir -p "%s"', collection_dir))
+    Shell.execute("mkdir -p %s", collection_dir)
     
-    -- Clear existing .cfg files in collection directory
-    os.execute(string.format('rm -f "%s"/*.cfg 2>/dev/null', collection_dir))
+    -- Clear existing .cfg files in collection directory (wildcard needed)
+    Shell.execute_with_wildcard("rm -f", collection_dir, "/*.cfg", "2>/dev/null")
     
     -- Write each game as a separate .cfg file
     local exported_count = 0

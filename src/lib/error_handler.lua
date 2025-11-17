@@ -4,6 +4,7 @@
 local Logger = require("src.lib.logger")
 local Paths = require("src.config.paths")
 local json = require("src.lib.json")
+local Shell = require("src.lib.shell")
 
 local ErrorHandler = {}
 
@@ -59,7 +60,7 @@ function ErrorHandler.safe_write_json(file_path, data)
     -- Ensure directory exists
     local dir = file_path:match("(.*)/")
     if dir and not Paths.dir_exists(dir) then
-        os.execute("mkdir -p \"" .. dir .. "\"")
+        Shell.execute("mkdir -p %s", dir)
     end
     
     -- Encode JSON
@@ -82,7 +83,7 @@ function ErrorHandler.safe_write_json(file_path, data)
     
     -- Create backup of existing file
     if Paths.file_exists(file_path) then
-        os.execute(string.format("cp \"%s\" \"%s.backup\"", file_path, file_path))
+        Shell.execute("cp %s %s.backup", file_path, file_path)
     end
     
     -- Atomic rename
@@ -103,7 +104,7 @@ function ErrorHandler.recover_collection_file(file_path)
     local backup_path = file_path .. ".backup"
     if Paths.file_exists(backup_path) then
         Logger.info("Restoring from backup...")
-        os.execute(string.format("cp \"%s\" \"%s\"", backup_path, file_path))
+        Shell.execute("cp %s %s", backup_path, file_path)
         return true, "Restored from backup"
     end
     

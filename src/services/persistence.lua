@@ -3,6 +3,7 @@
 
 local Logger = require("src.lib.logger")
 local json = require("src.lib.json")
+local Shell = require("src.lib.shell")
 
 local Persistence = {}
 
@@ -39,8 +40,8 @@ function Persistence.save(file_path, data, version)
     -- Create directory if it doesn't exist
     local dir = file_path:match("(.*/)")
     if dir then
-        -- Create directory recursively
-        os.execute("mkdir -p '" .. dir .. "'")
+        -- Create directory recursively (safely escaped)
+        Shell.execute("mkdir -p %s", dir)
     end
 
     -- Atomic write pattern: write to temp file, then rename

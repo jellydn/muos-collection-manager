@@ -19,8 +19,8 @@ DisplayConfig.height = 480
 DisplayConfig.scale = 1.0
 DisplayConfig.aspect_ratio = "4:3"
 
--- UI element sizes (scaled based on resolution)
-DisplayConfig.SIZES = {
+-- Original sizes before scaling (preserved for re-initialization)
+DisplayConfig.SIZES_ORIGINAL = {
     grid_item_width = 64,
     grid_item_height = 64,
     font_size_small = 12,
@@ -29,6 +29,9 @@ DisplayConfig.SIZES = {
     padding = 8,
     margin = 16
 }
+
+-- UI element sizes (scaled based on resolution)
+DisplayConfig.SIZES = {}
 
 -- Colors (palette optimized for low-res displays)
 DisplayConfig.COLORS = {
@@ -69,8 +72,8 @@ function DisplayConfig.init()
         DisplayConfig.scale = DisplayConfig.width / 640
     end
 
-    -- Scale UI elements
-    for key, value in pairs(DisplayConfig.SIZES) do
+    -- Scale UI elements (use original sizes to prevent repeated scaling)
+    for key, value in pairs(DisplayConfig.SIZES_ORIGINAL) do
         DisplayConfig.SIZES[key] = math.floor(value * DisplayConfig.scale)
     end
     

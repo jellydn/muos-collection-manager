@@ -2,6 +2,7 @@
 -- Constitution: II. Resource Efficiency (organized file storage)
 
 local Logger = require("src.lib.logger")
+local Shell = require("src.lib.shell")
 local Paths = {}
 
 -- Environment variables
@@ -79,7 +80,7 @@ Paths.all_rom_extensions = {
     ".cdi", ".gdi",
     -- Sega CD
     -- Ports (various executable formats)
-    ".sh", ".AppImage",
+    ".sh", ".appimage",
     -- Archive formats (universal)
     ".zip", ".7z", ".rar"
 }
@@ -103,7 +104,7 @@ Paths.extension_to_system = {
     [".gg"] = "gamegear",
     [".cdi"] = "dreamcast", [".gdi"] = "dreamcast",
     -- Ports
-    [".sh"] = "ports", [".AppImage"] = "ports",
+    [".sh"] = "ports", [".appimage"] = "ports",
     -- Multi-system formats (context-dependent)
     [".bin"] = "unknown", -- Could be PS1, Genesis, etc.
     [".chd"] = "unknown"  -- Could be PS1, Dreamcast, Sega CD, etc.
@@ -141,9 +142,9 @@ Paths.rom_extensions = {
 
 -- Initialize directories (create if don't exist)
 function Paths.init()
-    os.execute("mkdir -p " .. Paths.config_dir)
-    os.execute("mkdir -p " .. Paths.data_dir)
-    os.execute("mkdir -p " .. Paths.cache_dir)
+    Shell.execute("mkdir -p %s", Paths.config_dir)
+    Shell.execute("mkdir -p %s", Paths.data_dir)
+    Shell.execute("mkdir -p %s", Paths.cache_dir)
 
     -- Log ROM path for debugging
     Logger.info("ROM root path:", Paths.roms_root)

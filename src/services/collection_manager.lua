@@ -5,6 +5,7 @@ local Logger = require("src.lib.logger")
 local Collection = require("src.models.collection")
 local Persistence = require("src.services.persistence")
 local Paths = require("src.config.paths")
+local Shell = require("src.lib.shell")
 
 local CollectionManager = {}
 
@@ -309,7 +310,11 @@ function CollectionManager.load_muos_collections()
     -- Check if directory exists
     Logger.debug("Checking if directory exists...")
 
-    local check_dir = io.popen(string.format('test -d "%s" && echo "exists"', muos_collect_dir))
+    local check_dir = Shell.popen('test -d %s && echo "exists"', muos_collect_dir)
+    if not check_dir then
+        Logger.debug("Directory check failed, returning")
+        return
+    end
     local exists = check_dir:read("*a"):match("exists")
     check_dir:close()
 
@@ -321,10 +326,9 @@ function CollectionManager.load_muos_collections()
     end
 
     -- List all directories in collection folder
-    local ls_cmd = string.format('ls -1d "%s"/*/ 2>/dev/null', muos_collect_dir)
-    Logger.debug("About to list directories with:", ls_cmd)
+    Logger.debug("About to list directories in:", muos_collect_dir)
 
-    local handle = io.popen(ls_cmd)
+    local handle = Shell.popen_with_wildcard('ls -1d', muos_collect_dir, '/*/', '2>/dev/null')
     Logger.debug("io.popen() returned, handle:", tostring(handle))
 
     if not handle then

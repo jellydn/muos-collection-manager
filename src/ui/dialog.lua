@@ -17,9 +17,26 @@ Dialog.TYPE = {
 
 -- Create new dialog
 function Dialog.new(params)
-    assert(params.title, "Dialog requires title")
-    assert(params.message, "Dialog requires message")
-    assert(params.type, "Dialog requires type")
+    -- Validate required parameters (use error handling instead of assert)
+    if not params or type(params) ~= "table" then
+        Logger.error("Dialog.new: params must be a table")
+        error("Dialog requires params table")
+    end
+    
+    if not params.title or type(params.title) ~= "string" then
+        Logger.error("Dialog.new: title is required and must be a string")
+        error("Dialog requires title")
+    end
+    
+    if not params.message or type(params.message) ~= "string" then
+        Logger.error("Dialog.new: message is required and must be a string")
+        error("Dialog requires message")
+    end
+    
+    if not params.type or type(params.type) ~= "string" then
+        Logger.error("Dialog.new: type is required and must be a string")
+        error("Dialog requires type")
+    end
     
     local self = setmetatable({}, Dialog)
     
