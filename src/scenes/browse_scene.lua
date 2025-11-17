@@ -84,6 +84,11 @@ function BrowseScene.load_games()
         BrowseScene.games = GameLibrary.get_favorites()
         Logger.info("Loaded", #BrowseScene.games, "favorite games")
 
+    elseif BrowseScene.collection.id == "recent-system" or BrowseScene.collection.name == "Recently Played" then
+        -- Recently Played - get games with last_played timestamp
+        BrowseScene.games = GameLibrary.get_recent(100)  -- Get up to 100 recent games
+        Logger.info("Loaded", #BrowseScene.games, "recently played games")
+
     else
         -- Custom collection - apply ALL filters
         -- Defensively handle nil filters (treat as empty)

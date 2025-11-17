@@ -53,12 +53,6 @@ function CollectionManager.init(collections_file)
     CollectionManager.collections_by_id = {}
 
     for _, collection_data in ipairs(data) do
-        -- Skip removed system collections (migration)
-        if collection_data.id == "recent-system" then
-            Logger.info("Skipping removed system collection:", collection_data.name)
-            goto continue
-        end
-
         local collection, parse_err = Collection.new(collection_data)
         if collection then
             table.insert(CollectionManager.collections, collection)
@@ -67,18 +61,19 @@ function CollectionManager.init(collections_file)
         else
             Logger.warn("Failed to parse collection:", parse_err)
         end
-
-        ::continue::
     end
 
     Logger.info("Loaded", #CollectionManager.collections, "collections")
     Logger.debug("collections_by_id map size:", CollectionManager.count_map_size(CollectionManager.collections_by_id))
 
+    -- Ensure default system collections exist (add missing ones)
+    CollectionManager.ensure_default_collections()
+
     -- Skip loading muOS collections - we manage our own collections
     -- CollectionManager.load_muos_collections()
     Logger.debug("Skipping muOS collection loading (not needed)")
 
-    -- Save collections to persist migration (removes old system collections)
+    -- Save collections to persist any new default collections
     CollectionManager.save()
 
     return true
@@ -110,14 +105,76 @@ function CollectionManager.create_default_collections()
         sort_order = "title_asc"
     })
 
-    CollectionManager.collections = {all_games, favorites}
+    -- Recently Played (populated from muOS history)
+    local recent = Collection.new({
+        id = "recent-system",
+        name = "Recently Played",
+        filters = {},  -- Special handling in browse scene
+        filter_mode = "AND",
+        is_system = true,
+        icon = "clock",
+        sort_order = "recent"
+    })
+
+    CollectionManager.collections = {all_games, favorites, recent}
     CollectionManager.collections_by_id = {
         [all_games.id] = all_games,
-        [favorites.id] = favorites
+        [favorites.id] = favorites,
+        [recent.id] = recent
     }
 
     -- Save to disk
     CollectionManager.save()
+end
+
+-- Ensure default system collections exist (add missing ones without removing existing)
+function CollectionManager.ensure_default_collections()
+    local defaults = {
+        {
+            id = "all-games-system",
+            name = "All Games",
+            filters = {},
+            filter_mode = "AND",
+            is_system = true,
+            icon = "games",
+            sort_order = "title_asc"
+        },
+        {
+            id = "favorites-system",
+            name = "Favorites",
+            filters = {},
+            filter_mode = "AND",
+            is_system = true,
+            icon = "star",
+            sort_order = "title_asc"
+        },
+        {
+            id = "recent-system",
+            name = "Recently Played",
+            filters = {},
+            filter_mode = "AND",
+            is_system = true,
+            icon = "clock",
+            sort_order = "recent"
+        }
+    }
+
+    local added_count = 0
+    for _, default_data in ipairs(defaults) do
+        if not CollectionManager.collections_by_id[default_data.id] then
+            Logger.info("Adding missing default collection:", default_data.name)
+            local collection = Collection.new(default_data)
+            if collection then
+                table.insert(CollectionManager.collections, collection)
+                CollectionManager.collections_by_id[collection.id] = collection
+                added_count = added_count + 1
+            end
+        end
+    end
+
+    if added_count > 0 then
+        Logger.info("Added", added_count, "missing default collections")
+    end
 end
 
 -- Save all collections to disk

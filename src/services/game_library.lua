@@ -243,6 +243,9 @@ function GameLibrary.load(progress_callback)
 
     -- Load favorites from disk
     GameLibrary.load_favorites()
+    
+    -- Load muOS history to populate last_played timestamps
+    GameLibrary.load_muos_history()
 
     GameLibrary.is_loaded = true
     return GameLibrary.games
@@ -283,6 +286,226 @@ function GameLibrary.get_favorites()
         end
     end
     return results
+end
+
+-- Load muOS history and update game last_played timestamps
+-- Reads from /mnt/mmc/MUOS/info/history/ and matches to games in library
+function GameLibrary.load_muos_history()
+    local Shell = require("src.lib.shell")
+    local history_dir = "/mnt/mmc/MUOS/info/history"
+    
+    -- Check if history directory exists
+    if not Paths.dir_exists(history_dir) then
+        Logger.debug("muOS history directory not found:", history_dir)
+        return 0
+    end
+    
+    Logger.info("Loading muOS history from:", history_dir)
+    
+    -- Build file list using simple shell loop (handles UTF-8, no external tools)
+    local file_list = {}
+    local cmd = string.format('cd %s 2>/dev/null && for f in *.cfg; do [ -f "$f" ] && echo "$f"; done 2>/dev/null', Shell.escape(history_dir))
+    local dir_handle = io.popen(cmd)
+    
+    if dir_handle then
+        for filename in dir_handle:lines() do
+            if filename and filename ~= "" and filename ~= "*.cfg" then
+                -- Build full path
+                local full_path = history_dir .. "/" .. filename
+                table.insert(file_list, full_path)
+                Logger.info("Found history file:", filename)
+            end
+        end
+        dir_handle:close()
+    else
+        Logger.warn("Failed to list history directory")
+        return 0
+    end
+    
+    if #file_list == 0 then
+        Logger.debug("No .cfg files found in history directory")
+        return 0
+    end
+    
+    Logger.info("Found", #file_list, "history files")
+    
+    local matched_count = 0
+    local file_count = 0
+    local unmatched_files = {}  -- Track files that don't match
+    
+    -- Create a lookup map for fast game matching by file_path
+    local games_by_path = {}
+    for _, game in ipairs(GameLibrary.games) do
+        if game.file_path then
+            -- Normalize path for matching (handle both /mnt/mmc/ROMS and /mnt/union/ROMS)
+            local normalized = game.file_path:gsub("^/mnt/union/ROMS", "/mnt/mmc/ROMS")
+            games_by_path[normalized] = game
+            -- Also store original path
+            games_by_path[game.file_path] = game
+        end
+    end
+    
+    -- Read each history file
+    for _, history_file in ipairs(file_list) do
+        file_count = file_count + 1
+        
+        -- Read the .cfg file (3-line format: path, system, display_name)
+        -- Example:
+        --   /mnt/union/ROMS/GB/Battletoads-Double Dragon (USA).zip
+        --   GB
+        --   Battletoads-Double Dragon (USA)
+        local cfg_file, err = io.open(history_file, "r")
+        local rom_path, system, display_name
+        
+        if cfg_file then
+            rom_path = cfg_file:read("*l")  -- Line 1: ROM path (e.g., /mnt/union/ROMS/GB/game.zip)
+            system = cfg_file:read("*l")     -- Line 2: System (e.g., GB)
+            display_name = cfg_file:read("*l") -- Line 3: Display name (e.g., Battletoads-Double Dragon (USA))
+            cfg_file:close()
+        else
+            -- Fallback: UTF-8 filenames may fail with io.open, try using shell cat command
+            Logger.warn(string.format("Failed to open history file with io.open: %s (error: %s)", history_file, err or "unknown"))
+            Logger.info("Attempting fallback with shell cat command...")
+            
+            local cat_handle = Shell.popen('cat %s 2>/dev/null', history_file)
+            if cat_handle then
+                rom_path = cat_handle:read("*l")
+                system = cat_handle:read("*l")
+                display_name = cat_handle:read("*l")
+                cat_handle:close()
+                
+                if rom_path then
+                    Logger.info("Successfully read file with cat fallback")
+                else
+                    Logger.warn("Cat fallback also failed to read file")
+                end
+            else
+                Logger.warn("Cat command also failed, skipping file")
+            end
+        end
+        
+        if rom_path and rom_path ~= "" then
+                -- Normalize path (muOS uses /mnt/union/ROMS, we scan /mnt/mmc/ROMS)
+                local normalized_path = rom_path:gsub("^/mnt/union/ROMS", "/mnt/mmc/ROMS")
+                
+                Logger.info(string.format("Processing history file %d/%d: %s -> %s", 
+                    file_count, #file_list, display_name or "Unknown", rom_path))
+                
+                -- Try to find matching game by exact path match
+                local game = games_by_path[normalized_path] or games_by_path[rom_path]
+                
+                if game then
+                    Logger.info(string.format("  -> Matched by exact path: %s", game.title))
+                else
+                    -- If no exact match, try matching by filename (in case paths differ slightly)
+                    local history_filename = rom_path:match("([^/]+)$")
+                    if history_filename then
+                        Logger.info(string.format("  -> No exact path match, trying filename: %s", history_filename))
+                        
+                        -- First try exact filename match
+                        for _, g in ipairs(GameLibrary.games) do
+                            local game_filename = g.file_path:match("([^/]+)$")
+                            if game_filename == history_filename then
+                                game = g
+                                Logger.info(string.format("  -> Matched by filename: %s -> %s", history_filename, game.title))
+                                break
+                            end
+                        end
+                        
+                        -- If still no match, try normalized comparison (handle URL encoding, special chars)
+                        if not game then
+                            -- Normalize for comparison: lowercase, replace common URL encodings
+                            local function normalize_for_match(s)
+                                return s:lower()
+                                    :gsub("%%20", " ")  -- URL-encoded space
+                                    :gsub("%%27", "'")  -- URL-encoded apostrophe
+                                    :gsub("%%28", "(")  -- URL-encoded (
+                                    :gsub("%%29", ")")  -- URL-encoded )
+                                    :gsub("%%2C", ",")  -- URL-encoded comma
+                                    :gsub("%%26", "&")  -- URL-encoded ampersand
+                            end
+                            
+                            local normalized_history = normalize_for_match(history_filename)
+                            Logger.info(string.format("  -> Trying normalized match: %s", normalized_history))
+                            
+                            for _, g in ipairs(GameLibrary.games) do
+                                local game_filename = g.file_path:match("([^/]+)$")
+                                if game_filename and normalize_for_match(game_filename) == normalized_history then
+                                    game = g
+                                    Logger.info(string.format("  -> Matched by normalized filename: %s -> %s", history_filename, game.title))
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    
+                    if not game then
+                        table.insert(unmatched_files, {
+                            display_name = display_name or "Unknown",
+                            rom_path = rom_path,
+                            history_file = history_file
+                        })
+                        Logger.warn(string.format("  -> No match found for history entry: %s (path: %s)", 
+                            display_name or "Unknown", rom_path))
+                    end
+                end
+                
+                if game then
+                    -- Get file modification time as last_played timestamp
+                    local file_stat = Shell.popen('stat -c %%Y %s 2>/dev/null', history_file)
+                    if file_stat then
+                        local mtime_str = file_stat:read("*a")
+                        file_stat:close()
+                        local mtime = tonumber(mtime_str:match("%d+"))
+                        
+                        if mtime then
+                            -- Update last_played if this is more recent
+                            if not game.last_played or mtime > game.last_played then
+                                game.last_played = mtime
+                                game.play_count = (game.play_count or 0) + 1
+                                matched_count = matched_count + 1
+                                Logger.info(string.format("Matched history: %s -> %s (played: %s)", 
+                                    display_name or "Unknown", game.title, os.date("%Y-%m-%d %H:%M", mtime)))
+                            else
+                                Logger.info(string.format("History file older than existing last_played: %s -> %s (existing: %s, history: %s)", 
+                                    display_name or "Unknown", game.title, 
+                                    os.date("%Y-%m-%d %H:%M", game.last_played),
+                                    os.date("%Y-%m-%d %H:%M", mtime)))
+                            end
+                        else
+                            -- Fallback: use current time if stat fails
+                            game.last_played = os.time()
+                            game.play_count = (game.play_count or 0) + 1
+                            matched_count = matched_count + 1
+                        end
+                    else
+                        -- Fallback: use current time if stat command fails
+                        game.last_played = os.time()
+                        game.play_count = (game.play_count or 0) + 1
+                        matched_count = matched_count + 1
+                    end
+                else
+                    Logger.info("History file not matched to library:", rom_path)
+                end
+            else
+                Logger.warn(string.format("Empty or invalid ROM path in history file: %s", history_file))
+            end
+    end
+    
+    Logger.info(string.format("Loaded muOS history: %d files, %d matched to library", file_count, matched_count))
+    
+    -- Log unmatched files for debugging
+    if #unmatched_files > 0 then
+        Logger.error(string.format("=== UNMATCHED HISTORY FILES (%d) ===", #unmatched_files))
+        for _, unmatched in ipairs(unmatched_files) do
+            Logger.error(string.format("  - %s (path: %s)", unmatched.display_name, unmatched.rom_path))
+        end
+        Logger.error("=== END UNMATCHED FILES ===")
+    else
+        Logger.info("All history files matched successfully")
+    end
+    
+    return matched_count
 end
 
 -- Get recently played games

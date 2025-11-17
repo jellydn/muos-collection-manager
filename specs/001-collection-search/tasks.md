@@ -189,13 +189,13 @@
 - [x] T081 Optimize: Verify memory usage stays <10MB for collection system
 - [x] T082 Add error handling for missing ROM directories
 - [x] T083 Add error handling for corrupted JSON collection files
-- [ ] T084 Add box art image loading from /mnt/mmc/MUOS/info/catalogue/<System>/box/
-- [ ] T085 Update GameGrid to display box art thumbnails instead of text-only list
-- [ ] T086 Add fallback placeholder image when box art not found
-- [ ] T087 Implement image caching to avoid reloading same images
-- [ ] T088 Add muOS history integration for "Recently Played" collection
-- [ ] T089 Read from /mnt/mmc/MUOS/info/history/ to populate recent games
-- [ ] T090 Parse muOS history format and match to Game Library
+- [x] T084 Add box art image loading from /mnt/mmc/MUOS/info/catalogue/<System>/box/
+- [x] T085 Update GameGrid to display box art thumbnails instead of text-only list
+- [x] T086 Add fallback placeholder image when box art not found
+- [x] T087 Implement image caching to avoid reloading same images
+- [x] T088 Add muOS history integration for "Recently Played" collection
+- [x] T089 Read from /mnt/mmc/MUOS/info/history/ to populate recent games
+- [x] T090 Parse muOS history format and match to Game Library
 - [ ] T091 Test muOS collection export format on actual device
 - [ ] T092 Verify exported collections appear in muOS muxcollect module
 - [ ] T093 Test on actual muOS hardware (RG35XX or similar)
