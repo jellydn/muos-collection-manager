@@ -176,30 +176,52 @@ function OnScreenKeyboard:move_down()
 end
 
 function OnScreenKeyboard:move_left()
-    local new_col = math.max(1, self.selected_col - 1)
-
-    -- If we land on a SPACE, move to the first SPACE in the group
-    if self.layout[self.selected_row][new_col] == "SPACE" then
-        while new_col > 1 and self.layout[self.selected_row][new_col - 1] == "SPACE" do
-            new_col = new_col - 1
+    -- If currently on SPACE, jump to before SPACE bar
+    if self.layout[self.selected_row][self.selected_col] == "SPACE" then
+        -- Find the first SPACE position
+        local space_start = self.selected_col
+        while space_start > 1 and self.layout[self.selected_row][space_start - 1] == "SPACE" do
+            space_start = space_start - 1
         end
-    end
+        -- Move to key before SPACE bar
+        self.selected_col = math.max(1, space_start - 1)
+    else
+        -- Normal move left
+        local new_col = math.max(1, self.selected_col - 1)
 
-    self.selected_col = new_col
+        -- If we land on a SPACE, move to the first SPACE in the group
+        if self.layout[self.selected_row][new_col] == "SPACE" then
+            while new_col > 1 and self.layout[self.selected_row][new_col - 1] == "SPACE" do
+                new_col = new_col - 1
+            end
+        end
+
+        self.selected_col = new_col
+    end
 end
 
 function OnScreenKeyboard:move_right()
-    local new_col = math.min(#self.layout[self.selected_row], self.selected_col + 1)
-
-    -- If we're on a SPACE and moving right, skip to after all SPACE keys
+    -- If currently on SPACE, jump to after SPACE bar
     if self.layout[self.selected_row][self.selected_col] == "SPACE" then
+        -- Find position after last SPACE
+        local new_col = self.selected_col
         while new_col <= #self.layout[self.selected_row] and self.layout[self.selected_row][new_col] == "SPACE" do
             new_col = new_col + 1
         end
-        new_col = math.min(#self.layout[self.selected_row], new_col)
-    end
+        self.selected_col = math.min(#self.layout[self.selected_row], new_col)
+    else
+        -- Normal move right
+        local new_col = math.min(#self.layout[self.selected_row], self.selected_col + 1)
 
-    self.selected_col = new_col
+        -- If we land on a SPACE, move to the first SPACE in the group
+        if new_col <= #self.layout[self.selected_row] and self.layout[self.selected_row][new_col] == "SPACE" then
+            while new_col > 1 and self.layout[self.selected_row][new_col - 1] == "SPACE" do
+                new_col = new_col - 1
+            end
+        end
+
+        self.selected_col = new_col
+    end
 end
 
 -- Clamp selection to valid key in current row
