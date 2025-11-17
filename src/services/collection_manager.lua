@@ -350,19 +350,23 @@ end
 -- Returns array of game ROM paths sorted by most recent first
 -- @return table: Array of {path, system, title, timestamp}
 function CollectionManager.read_muos_history()
+    Logger.info("read_muos_history: Starting...")
     local history_dir = "/mnt/mmc/MUOS/info/history"
     local history_entries = {}
-    
+
+    Logger.info("read_muos_history: Checking if directory exists...")
     -- Check if history directory exists
     local check_dir = io.popen(string.format('test -d "%s" && echo "exists"', history_dir))
     local exists = check_dir:read("*a"):match("exists")
     check_dir:close()
-    
+    Logger.info("read_muos_history: Directory exists:", exists and "yes" or "no")
+
     if not exists then
         Logger.warn("muOS history directory not found:", history_dir)
         return {}
     end
-    
+
+    Logger.info("read_muos_history: Listing .cfg files...")
     -- List all .cfg files in history directory, sorted by modification time (newest first)
     local ls_cmd = string.format('ls -1t "%s"/*.cfg 2>/dev/null', history_dir)
     local handle = io.popen(ls_cmd)
@@ -370,11 +374,15 @@ function CollectionManager.read_muos_history()
         Logger.error("Failed to read history directory")
         return {}
     end
-    
+    Logger.info("read_muos_history: ls command completed, reading files...")
+
     local file_count = 0
     for cfg_file in handle:lines() do
         file_count = file_count + 1
-        
+        if file_count % 10 == 0 then
+            Logger.info("read_muos_history: Processing file", file_count, "...")
+        end
+
         -- Read the .cfg file (3 lines: path, system, title)
         local cfg = io.open(cfg_file, "r")
         if cfg then
