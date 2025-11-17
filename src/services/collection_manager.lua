@@ -52,6 +52,12 @@ function CollectionManager.init(collections_file)
     CollectionManager.collections_by_id = {}
 
     for _, collection_data in ipairs(data) do
+        -- Skip removed system collections (migration)
+        if collection_data.id == "recent-system" then
+            Logger.info("Skipping removed system collection:", collection_data.name)
+            goto continue
+        end
+
         local collection, parse_err = Collection.new(collection_data)
         if collection then
             table.insert(CollectionManager.collections, collection)
@@ -60,6 +66,8 @@ function CollectionManager.init(collections_file)
         else
             Logger.warn("Failed to parse collection:", parse_err)
         end
+
+        ::continue::
     end
 
     Logger.info("Loaded", #CollectionManager.collections, "collections")
@@ -68,6 +76,9 @@ function CollectionManager.init(collections_file)
     -- Skip loading muOS collections - we manage our own collections
     -- CollectionManager.load_muos_collections()
     Logger.debug("Skipping muOS collection loading (not needed)")
+
+    -- Save collections to persist migration (removes old system collections)
+    CollectionManager.save()
 
     return true
 end
