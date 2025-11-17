@@ -22,7 +22,7 @@ A dynamic game collection management system for muOS-compatible retro handhelds,
 
 ### Installation Steps
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/game-vault-manager/releases)
+1. **Download** the latest release from [GitHub Releases](https://github.com/jellydn/muos-collection-manager/releases)
 
    - File: `game-vault-<version>.muxapp`
 
@@ -112,7 +112,7 @@ On first launch, the app will:
 ## File Locations
 
 - **Collections**: `~/.config/muos/collections/collections.json`
-- **Metadata Cache**: `~/.cache/game-vault-manager/metadata_cache.json`
+- **Metadata Cache**: `~/.cache/muos-collection-manager/metadata_cache.json`
 - **Settings**: `~/.config/muos/collections/settings.json`
 - **ROM Directories**: `/mnt/mmc/ROMS/<SYSTEM>/`
 
@@ -240,7 +240,7 @@ Contributions welcome! Please:
 
 ## Support
 
-- Issues: https://github.com/jellydn/game-vault-manager/issues
+- Issues: https://github.com/jellydn/muos-collection-manager/issues
 - muOS Discord: https://muos.dev/
 - Love2D Forums: https://love2d.org/forums/
 
