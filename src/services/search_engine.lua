@@ -89,11 +89,6 @@ function SearchEngine.query(query, dt)
     -- Execute search after debounce delay
     if SearchEngine.debounce_timer >= SearchEngine.debounce_delay then
         SearchEngine.last_results = SearchEngine.search(SearchEngine.pending_query)
-        -- Only log if query is not empty (avoid spam for "show all" queries)
-        if SearchEngine.pending_query ~= "" then
-            Logger.info(string.format("Search results: %d games for query '%s'",
-                #SearchEngine.last_results, SearchEngine.pending_query))
-        end
         -- Reset timer to prevent repeated execution until query changes
         SearchEngine.debounce_timer = SearchEngine.debounce_delay
         return SearchEngine.last_results
