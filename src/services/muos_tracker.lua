@@ -68,10 +68,13 @@ end
 -- @return table: Enhanced game object with playtime data
 function MuOSTracker.enrich_game(game)
     if not game or not game.file_path then
+        Logger.debug("enrich_game: game or file_path is nil")
         return game
     end
 
+    Logger.debug("enrich_game called for:", game.title, "path:", game.file_path)
     local playtime = MuOSTracker.get_playtime(game.file_path)
+    Logger.debug("Playtime data retrieved:", playtime and "found" or "not found")
     if playtime then
         -- Add muOS-specific tracking data
         game.muos_launches = playtime.launches or 0
@@ -83,6 +86,8 @@ function MuOSTracker.enrich_game(game)
 
         Logger.debug(string.format("Enriched %s: %d launches, %d total seconds",
             game.title, game.muos_launches, game.muos_total_time))
+    else
+        Logger.debug("No playtime data found for:", game.title)
     end
 
     return game
