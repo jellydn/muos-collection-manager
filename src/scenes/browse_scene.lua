@@ -89,6 +89,11 @@ function BrowseScene.load_games()
         BrowseScene.games = GameLibrary.get_recent(100)  -- Get up to 100 recent games
         Logger.info("Loaded", #BrowseScene.games, "recently played games")
 
+    elseif BrowseScene.collection.is_platform_view and BrowseScene.collection.system_filter then
+        -- Platform-filtered view - get games by system
+        BrowseScene.games = GameLibrary.get_by_system(BrowseScene.collection.system_filter)
+        Logger.info("Loaded", #BrowseScene.games, "games for platform:", BrowseScene.collection.system_filter)
+
     else
         -- Custom collection - apply ALL filters
         -- Defensively handle nil filters (treat as empty)
@@ -286,8 +291,14 @@ function BrowseScene.handle_action(action)
         end
 
     elseif action == "cancel" then
-        -- Go back to menu
-        SceneManager.switch_with_fade("menu")
+        -- Go back to menu or platform browser
+        if BrowseScene.collection and BrowseScene.collection.is_platform_view then
+            -- Return to platform browser
+            SceneManager.switch_with_fade("platform_browser")
+        else
+            -- Return to menu
+            SceneManager.switch_with_fade("menu")
+        end
 
     elseif action == "menu" then
         -- Export collection to muOS format (START button)

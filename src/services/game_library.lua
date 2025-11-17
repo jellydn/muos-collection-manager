@@ -277,6 +277,77 @@ function GameLibrary.get_by_system(system)
     return results
 end
 
+-- Get all platforms/systems with game counts
+-- Returns array of {system, count, display_name} sorted by display name
+function GameLibrary.get_platforms()
+    local platforms = {}
+    local system_counts = {}
+    
+    -- Count games per system
+    for _, game in ipairs(GameLibrary.games) do
+        local sys = game.system
+        if sys then
+            system_counts[sys] = (system_counts[sys] or 0) + 1
+        end
+    end
+    
+    -- Convert to array with display names
+    -- MUST match muOS catalogue folder names from /mnt/mmc/MUOS/info/catalogue/
+    -- These match the catalogue= values in MUOS/info/assign/<system>/global.ini
+    local system_names = {
+        -- Nintendo
+        nes = "Nintendo NES - Famicom",
+        fc = "Nintendo NES - Famicom",
+        snes = "Nintendo SNES - SFC",
+        sfc = "Nintendo SNES - SFC",
+        gb = "Nintendo Game Boy",
+        gbc = "Nintendo Game Boy Color",
+        gba = "Nintendo Game Boy Advance",
+        n64 = "Nintendo N64",
+        nds = "Nintendo DS",
+        -- PlayStation
+        psx = "Sony PlayStation",
+        ps2 = "Sony PlayStation 2",
+        psp = "Sony PSP",
+        -- Sega
+        genesis = "Sega Genesis - Mega Drive",
+        md = "Sega Genesis - Mega Drive",
+        sms = "Sega Master System",
+        gg = "Sega Game Gear",
+        saturn = "Sega Saturn",
+        dc = "Sega Dreamcast",
+        -- Arcade
+        arcade = "Arcade",
+        mame = "Arcade",
+        fba = "Arcade",
+        -- Atari
+        atari2600 = "Atari 2600",
+        atari7800 = "Atari 7800",
+        lynx = "Atari Lynx",
+        -- Other
+        ngp = "SNK Neo Geo Pocket",
+        pico8 = "PICO-8",
+        ports = "Ports"
+    }
+    
+    for system, count in pairs(system_counts) do
+        if count > 0 then
+            table.insert(platforms, {
+                system = system,
+                count = count,
+                display_name = system_names[system] or system:upper()
+            })
+        end
+    end
+    
+    -- Sort by display name
+    table.sort(platforms, function(a, b)
+        return a.display_name < b.display_name
+    end)
+    
+    return platforms
+end
+
 -- Get favorite games
 function GameLibrary.get_favorites()
     local results = {}

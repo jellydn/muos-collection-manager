@@ -164,7 +164,13 @@ function MenuScene.handle_action(action)
         local collection = MenuScene.collections[MenuScene.selected_index]
         if collection then
             Logger.info("Opening collection:", collection.name)
-            SceneManager.switch_with_fade("browse", {collection = collection})
+            
+            -- Special handling for platform browser
+            if collection.id == "platforms-system" then
+                SceneManager.switch_with_fade("platform_browser")
+            else
+                SceneManager.switch_with_fade("browse", {collection = collection})
+            end
         end
 
     elseif action == "cancel" then

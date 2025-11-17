@@ -116,11 +116,23 @@ function CollectionManager.create_default_collections()
         sort_order = "recent"
     })
 
-    CollectionManager.collections = {all_games, favorites, recent}
+    -- Browse by Platform (hierarchical platform browser)
+    local platforms = Collection.new({
+        id = "platforms-system",
+        name = "Browse by Platform",
+        filters = {},  -- Special handling - opens platform browser
+        filter_mode = "AND",
+        is_system = true,
+        icon = "grid",
+        sort_order = "title_asc"
+    })
+
+    CollectionManager.collections = {all_games, favorites, recent, platforms}
     CollectionManager.collections_by_id = {
         [all_games.id] = all_games,
         [favorites.id] = favorites,
-        [recent.id] = recent
+        [recent.id] = recent,
+        [platforms.id] = platforms
     }
 
     -- Save to disk
@@ -156,6 +168,15 @@ function CollectionManager.ensure_default_collections()
             is_system = true,
             icon = "clock",
             sort_order = "recent"
+        },
+        {
+            id = "platforms-system",
+            name = "Browse by Platform",
+            filters = {},
+            filter_mode = "AND",
+            is_system = true,
+            icon = "grid",
+            sort_order = "title_asc"
         }
     }
 

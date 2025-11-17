@@ -144,6 +144,9 @@ local function complete_initialization()
 		SceneManager.register("browse", require("src.scenes.browse_scene"))
 		Logger.debug("Registered browse_scene")
 
+		SceneManager.register("platform_browser", require("src.scenes.platform_browser_scene"))
+		Logger.debug("Registered platform_browser_scene")
+
 		SceneManager.register("loading", LoadingScene)
 		Logger.debug("Registered loading_scene")
 
