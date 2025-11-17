@@ -64,11 +64,15 @@ function PlatformBrowserScene.draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.printf("Browse by Platform", 0, 20, screen_w, "center")
     
-    -- Platform list
+    -- Platform list with virtual rendering (viewport culling for performance)
     local y_offset = 80
-    local visible_start = math.floor(PlatformBrowserScene.scroll_offset / ITEM_HEIGHT) + 1
-    local visible_end = math.min(visible_start + ITEMS_PER_PAGE, #PlatformBrowserScene.platforms)
     
+    -- Calculate visible range based on scroll position
+    local visible_start = math.max(1, math.floor(PlatformBrowserScene.scroll_offset / ITEM_HEIGHT))
+    local visible_end = math.min(#PlatformBrowserScene.platforms, 
+                                 math.ceil((PlatformBrowserScene.scroll_offset + screen_h - 140) / ITEM_HEIGHT) + 1)
+    
+    -- Only render visible items (virtual list for performance with 100+ platforms)
     for i = visible_start, visible_end do
         local platform = PlatformBrowserScene.platforms[i]
         local y = y_offset + ((i - 1) * ITEM_HEIGHT) - PlatformBrowserScene.scroll_offset
@@ -92,8 +96,10 @@ function PlatformBrowserScene.draw()
     
     -- Scrollbar indicator if needed
     if #PlatformBrowserScene.platforms > ITEMS_PER_PAGE then
-        local scrollbar_h = (ITEMS_PER_PAGE / #PlatformBrowserScene.platforms) * (screen_h - 120)
-        local scrollbar_y = 80 + (PlatformBrowserScene.scroll_offset / (#PlatformBrowserScene.platforms * ITEM_HEIGHT)) * (screen_h - 120)
+        local total_height = #PlatformBrowserScene.platforms * ITEM_HEIGHT
+        local viewport_height = screen_h - 140
+        local scrollbar_h = (viewport_height / total_height) * viewport_height
+        local scrollbar_y = 80 + (PlatformBrowserScene.scroll_offset / total_height) * viewport_height
         love.graphics.setColor(0.6, 0.6, 0.6)
         love.graphics.rectangle("fill", screen_w - 10, scrollbar_y, 5, scrollbar_h)
     end
