@@ -604,7 +604,7 @@ function GameGrid:draw_info_panel(game)
     end
 
     -- muOS Tracking Stats (if available)
-    Logger.debug("Checking playtime for:", game.title, "muos_launches:", game.muos_launches or "nil", "muos_total_time:", game.muos_total_time or "nil")
+    Logger.info("Checking playtime for:", game.title, "muos_launches:", game.muos_launches or "nil", "muos_total_time:", game.muos_total_time or "nil")
     if game.muos_launches and game.muos_launches > 0 then
         love.graphics.setColor(DisplayConfig.COLORS.text)
         love.graphics.print("─────────────", content_x, info_y)
