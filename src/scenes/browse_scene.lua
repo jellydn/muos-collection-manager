@@ -74,17 +74,24 @@ function BrowseScene.load_games()
     elseif BrowseScene.collection.id == "recent-system" then
         -- Recently played - load from muOS history
         Logger.info("Loading recently played games from muOS history")
+
+        Logger.info("Step 1: Reading muOS history...")
         local CollectionManager = require("src.services.collection_manager")
         local history_entries = CollectionManager.read_muos_history()
+        Logger.info("Step 1 complete: Read", #history_entries, "history entries")
 
-        -- Build lookup table for O(1) access (instead of nested O(n*m) loop)
+        Logger.info("Step 2: Getting all games for lookup...")
         local all_games = SearchEngine.search("")
+        Logger.info("Step 2 complete: Got", #all_games, "games")
+
+        Logger.info("Step 3: Building lookup table...")
         local games_by_path = {}
         for _, game in ipairs(all_games) do
             games_by_path[game.file_path] = game
         end
+        Logger.info("Step 3 complete: Lookup table built with", #all_games, "entries")
 
-        -- Match history entries using lookup table
+        Logger.info("Step 4: Matching history entries...")
         BrowseScene.games = {}
         for _, entry in ipairs(history_entries) do
             local game = games_by_path[entry.path]
@@ -92,6 +99,7 @@ function BrowseScene.load_games()
                 table.insert(BrowseScene.games, game)
             end
         end
+        Logger.info("Step 4 complete: Matched", #BrowseScene.games, "games")
 
         Logger.info("Loaded", #BrowseScene.games, "recently played games from muOS history")
 
