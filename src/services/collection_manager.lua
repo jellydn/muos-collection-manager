@@ -99,22 +99,10 @@ function CollectionManager.create_default_collections()
         sort_order = "title_asc"
     })
 
-    -- Recently Played
-    local recent = Collection.new({
-        id = "recent-system",
-        name = "Recently Played",
-        filters = {},  -- Special handling in browse scene
-        filter_mode = "AND",
-        is_system = true,
-        icon = "clock",
-        sort_order = "recent"
-    })
-
-    CollectionManager.collections = {all_games, favorites, recent}
+    CollectionManager.collections = {all_games, favorites}
     CollectionManager.collections_by_id = {
         [all_games.id] = all_games,
-        [favorites.id] = favorites,
-        [recent.id] = recent
+        [favorites.id] = favorites
     }
 
     -- Save to disk

@@ -71,38 +71,6 @@ function BrowseScene.load_games()
         BrowseScene.games = GameLibrary.get_favorites()
         Logger.info("Loaded", #BrowseScene.games, "favorite games")
 
-    elseif BrowseScene.collection.id == "recent-system" then
-        -- Recently played - load from muOS history
-        Logger.info("Loading recently played games from muOS history")
-
-        Logger.info("Step 1: Reading muOS history...")
-        local CollectionManager = require("src.services.collection_manager")
-        local history_entries = CollectionManager.read_muos_history()
-        Logger.info("Step 1 complete: Read", #history_entries, "history entries")
-
-        Logger.info("Step 2: Getting all games for lookup...")
-        local all_games = SearchEngine.search("")
-        Logger.info("Step 2 complete: Got", #all_games, "games")
-
-        Logger.info("Step 3: Building lookup table...")
-        local games_by_path = {}
-        for _, game in ipairs(all_games) do
-            games_by_path[game.file_path] = game
-        end
-        Logger.info("Step 3 complete: Lookup table built with", #all_games, "entries")
-
-        Logger.info("Step 4: Matching history entries...")
-        BrowseScene.games = {}
-        for _, entry in ipairs(history_entries) do
-            local game = games_by_path[entry.path]
-            if game then
-                table.insert(BrowseScene.games, game)
-            end
-        end
-        Logger.info("Step 4 complete: Matched", #BrowseScene.games, "games")
-
-        Logger.info("Loaded", #BrowseScene.games, "recently played games from muOS history")
-
     else
         -- Custom collection - apply ALL filters
         if #BrowseScene.collection.filters == 0 then
@@ -196,10 +164,9 @@ function BrowseScene.draw()
         local help_y = DisplayConfig.height - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
 
         -- Show different help text based on whether collection can be exported
-        -- Only "All Games" and "Recently Played" cannot be exported
+        -- Only "All Games" cannot be exported
         local non_exportable = {
-            ["all-games-system"] = true,
-            ["recent-system"] = true
+            ["all-games-system"] = true
         }
 
         local help_text
@@ -292,10 +259,9 @@ function BrowseScene.handle_action(action)
 
     elseif action == "menu" then
         -- Export collection to muOS format (START button)
-        -- Block export for dynamic system collections (All Games, Recently Played)
+        -- Block export for dynamic system collections (All Games)
         local non_exportable = {
-            ["all-games-system"] = true,
-            ["recent-system"] = true
+            ["all-games-system"] = true
         }
 
         if BrowseScene.collection and non_exportable[BrowseScene.collection.id] then
