@@ -94,25 +94,20 @@ function SearchScene.update(dt)
 
     -- Execute debounced name search
     local query = SearchScene.search_bar:get_query()
-    Logger.debug(string.format("Update: query='%s', dt=%.4f", query or "", dt or 0))
 
     -- Only search if query is empty (show all) or has minimum length
     if query == "" then
         -- No query - show all games
         SearchScene.search_results = SearchEngine.query("", dt)
-        Logger.debug(string.format("Query empty, showing all %d results", #SearchScene.search_results))
     elseif #query >= SearchScene.MIN_SEARCH_LENGTH then
         -- Query long enough - perform search
         SearchScene.search_results = SearchEngine.query(query, dt)
-        Logger.debug(string.format("Query returned %d results", #SearchScene.search_results))
     else
         -- Query too short - keep showing all games (don't search yet)
         SearchScene.search_results = SearchEngine.get_last_results()
         if #SearchScene.search_results == 0 then
             SearchScene.search_results = SearchEngine.query("", dt)
         end
-        Logger.debug(string.format("Query too short (%d chars, min %d), keeping %d results",
-            #query, SearchScene.MIN_SEARCH_LENGTH, #SearchScene.search_results))
     end
 
     -- Show loading indicator if search is taking >100ms
