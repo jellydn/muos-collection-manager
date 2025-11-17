@@ -7,21 +7,21 @@ local DisplayConfig = require("src.config.display_config")
 local OnScreenKeyboard = {}
 OnScreenKeyboard.__index = OnScreenKeyboard
 
--- Keyboard layouts
+-- Keyboard layouts (Standard QWERTY)
 local LAYOUT_LOWERCASE = {
     {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
-    {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
-    {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"},
-    {"SPACE"}
+    {"a", "s", "d", "f", "g", "h", "j", "k", "l"},
+    {"CAPS", "z", "x", "c", "v", "b", "n", "m", "DEL"},
+    {"-", ".", "SPACE", ",", "?"}
 }
 
 local LAYOUT_UPPERCASE = {
-    {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"},
+    {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
-    {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
-    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "?", "DEL"},
-    {"SPACE"}
+    {"A", "S", "D", "F", "G", "H", "J", "K", "L"},
+    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "DEL"},
+    {"_", "!", "SPACE", "@", "#"}
 }
 
 -- Create a new OnScreenKeyboard
