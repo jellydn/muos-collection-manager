@@ -12,6 +12,7 @@ local CollectionManager = {}
 CollectionManager.collections = {}  -- Array of Collection objects
 CollectionManager.collections_by_id = {}  -- Map of id → Collection for fast lookup
 CollectionManager.collections_file = nil  -- Will be set during init
+CollectionManager.history_cache = nil  -- Cache for muOS history (read once)
 
 -- Helper to count map size
 function CollectionManager.count_map_size(map)
@@ -350,7 +351,13 @@ end
 -- Returns array of game ROM paths sorted by most recent first
 -- @return table: Array of {path, system, title, timestamp}
 function CollectionManager.read_muos_history()
-    Logger.info("read_muos_history: Starting...")
+    -- Return cached history if available
+    if CollectionManager.history_cache then
+        Logger.info("Returning cached muOS history (", #CollectionManager.history_cache, "entries)")
+        return CollectionManager.history_cache
+    end
+
+    Logger.info("read_muos_history: Starting (no cache)...")
     local history_dir = "/mnt/mmc/MUOS/info/history"
     local history_entries = {}
 
@@ -416,8 +423,13 @@ function CollectionManager.read_muos_history()
         end
     end
     handle:close()
-    
+
     Logger.info("Read", #history_entries, "entries from muOS history")
+
+    -- Cache the result
+    CollectionManager.history_cache = history_entries
+    Logger.info("Cached muOS history for future use")
+
     return history_entries
 end
 
