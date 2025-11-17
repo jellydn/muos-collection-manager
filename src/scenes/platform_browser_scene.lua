@@ -35,7 +35,22 @@ function PlatformBrowserScene.exit()
 end
 
 function PlatformBrowserScene.update(dt)
-    -- No continuous updates needed
+    -- Keep selected item in view (smooth scrolling like MenuScene)
+    local viewport_height = DisplayConfig.height - 150  -- Account for header and footer
+    local target_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
+    
+    local min_scroll = target_y - viewport_height + ITEM_HEIGHT
+    local max_scroll = target_y
+    
+    if PlatformBrowserScene.scroll_offset < min_scroll then
+        PlatformBrowserScene.scroll_offset = min_scroll
+    elseif PlatformBrowserScene.scroll_offset > max_scroll then
+        PlatformBrowserScene.scroll_offset = max_scroll
+    end
+    
+    -- Clamp scroll
+    local max_offset = math.max(0, #PlatformBrowserScene.platforms * ITEM_HEIGHT - viewport_height)
+    PlatformBrowserScene.scroll_offset = math.max(0, math.min(max_offset, PlatformBrowserScene.scroll_offset))
 end
 
 function PlatformBrowserScene.draw()
@@ -103,30 +118,12 @@ function PlatformBrowserScene.handle_action(action)
     if action == "up" then
         if PlatformBrowserScene.selected_index > 1 then
             PlatformBrowserScene.selected_index = PlatformBrowserScene.selected_index - 1
-            
-            -- Auto-scroll
-            local item_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
-            
-            if item_y < PlatformBrowserScene.scroll_offset then
-                PlatformBrowserScene.scroll_offset = item_y
-            end
-            
             Logger.info("Platform selection moved UP to:", PlatformBrowserScene.selected_index, "/", #PlatformBrowserScene.platforms)
         end
         
     elseif action == "down" then
         if PlatformBrowserScene.selected_index < #PlatformBrowserScene.platforms then
             PlatformBrowserScene.selected_index = PlatformBrowserScene.selected_index + 1
-            
-            -- Auto-scroll
-            local item_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
-            local screen_h = DisplayConfig.height
-            local visible_bottom = PlatformBrowserScene.scroll_offset + (screen_h - 120)
-            
-            if item_y + ITEM_HEIGHT > visible_bottom then
-                PlatformBrowserScene.scroll_offset = item_y - (screen_h - 120) + ITEM_HEIGHT
-            end
-            
             Logger.info("Platform selection moved DOWN to:", PlatformBrowserScene.selected_index, "/", #PlatformBrowserScene.platforms)
         end
         
