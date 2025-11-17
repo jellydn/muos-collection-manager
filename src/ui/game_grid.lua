@@ -509,9 +509,7 @@ function GameGrid:draw_info_panel(game)
 
     Logger.info("Drawing info panel for:", game.title)
 
-    -- Enrich game with muOS tracking data
-    local MuOSTracker = require("src.services.muos_tracker")
-    game = MuOSTracker.enrich_game(game)
+    -- Game is already enriched with muOS tracking data by the scene before calling this function
 
     -- Panel configuration
     local panel_width = math.min(500, DisplayConfig.width - 40)

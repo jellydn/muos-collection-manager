@@ -26,6 +26,7 @@ SearchScene.keyboard_mode = false
 SearchScene.loading_indicator_visible = false
 SearchScene.search_start_time = 0
 SearchScene.show_info_panel = false
+SearchScene.info_panel_game = nil  -- Cached enriched game for info panel
 
 -- Enter scene
 function SearchScene.enter(data)
@@ -160,11 +161,8 @@ function SearchScene.draw()
     end
 
     -- Draw game info panel if active
-    if SearchScene.show_info_panel then
-        local selected = SearchScene.game_grid and SearchScene.game_grid:get_selected()
-        if selected and SearchScene.game_grid then
-            SearchScene.game_grid:draw_info_panel(selected)
-        end
+    if SearchScene.show_info_panel and SearchScene.info_panel_game then
+        SearchScene.game_grid:draw_info_panel(SearchScene.info_panel_game)
     end
 
     -- Draw help text
@@ -221,6 +219,7 @@ function SearchScene.handle_action(action)
     if SearchScene.show_info_panel then
         if action == "cancel" then
             SearchScene.show_info_panel = false
+            SearchScene.info_panel_game = nil
         end
         return
     end
@@ -286,6 +285,9 @@ function SearchScene.handle_action(action)
             local selected = SearchScene.game_grid and SearchScene.game_grid:get_selected()
             if selected then
                 Logger.info("A pressed - opening info panel for:", selected.title)
+                -- Enrich game with muOS tracking data once when opening
+                local MuOSTracker = require("src.services.muos_tracker")
+                SearchScene.info_panel_game = MuOSTracker.enrich_game(selected)
                 SearchScene.show_info_panel = true
             end
         end

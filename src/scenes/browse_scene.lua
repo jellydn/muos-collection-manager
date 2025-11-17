@@ -19,6 +19,7 @@ BrowseScene.games = {}
 BrowseScene.game_grid = nil
 BrowseScene.export_dialog = nil  -- Success/error message dialog
 BrowseScene.show_info_panel = false  -- Game info panel (menu button)
+BrowseScene.info_panel_game = nil  -- Cached enriched game for info panel
 
 -- Enter scene
 -- @param data table: {collection = Collection}
@@ -176,11 +177,8 @@ function BrowseScene.draw()
     end
 
     -- Draw info panel if active (menu button pressed)
-    if BrowseScene.show_info_panel and BrowseScene.game_grid then
-        local selected = BrowseScene.game_grid:get_selected()
-        if selected then
-            BrowseScene.game_grid:draw_info_panel(selected)
-        end
+    if BrowseScene.show_info_panel and BrowseScene.info_panel_game then
+        BrowseScene.game_grid:draw_info_panel(BrowseScene.info_panel_game)
     end
 
     -- Draw help text (only if dialog not open)
@@ -230,6 +228,7 @@ function BrowseScene.handle_action(action)
     if BrowseScene.show_info_panel then
         if action == "cancel" then
             BrowseScene.show_info_panel = false
+            BrowseScene.info_panel_game = nil
         end
         return
     end
@@ -274,6 +273,9 @@ function BrowseScene.handle_action(action)
         local selected = BrowseScene.game_grid and BrowseScene.game_grid:get_selected()
         if selected then
             Logger.info("A pressed - opening info panel for:", selected.title)
+            -- Enrich game with muOS tracking data once when opening
+            local MuOSTracker = require("src.services.muos_tracker")
+            BrowseScene.info_panel_game = MuOSTracker.enrich_game(selected)
             BrowseScene.show_info_panel = true
         end
 
