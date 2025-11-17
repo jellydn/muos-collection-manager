@@ -58,6 +58,24 @@ Players can view playtime statistics from muOS tracking and export collections t
 
 ---
 
+### User Story 4 - Browse Games by Platform (Priority: P2)
+
+Players can browse their game library organized by gaming platform/system (GB, GBA, NES, SNES, PSP, etc.). Selecting a platform shows all games for that system, making it easy to find games for a specific console.
+
+**Why this priority**: Players often want to browse games by platform (e.g., "show me all my Game Boy games"), especially when they have large multi-system libraries. This complements search-based discovery with category-based browsing.
+
+**Independent Test**: Open "Browse by Platform" collection, select "GBA" platform, verify only Game Boy Advance games appear in the list.
+
+**Acceptance Scenarios**:
+
+1. **Given** player has games from multiple platforms, **When** player opens "Browse by Platform" collection, **Then** a list of all platforms with game counts is displayed
+2. **Given** player selects "GB" platform, **When** viewing games, **Then** only Game Boy games are shown
+3. **Given** player adds new PSP games to library, **When** returning to platform browser, **Then** "PSP" platform appears in the list with correct game count
+4. **Given** player is viewing a platform's games, **When** pressing Back button, **Then** system returns to platform selection screen
+5. **Given** platform has 0 games, **When** browsing platforms, **Then** that platform is not shown in the list
+
+---
+
 ### Edge Cases
 
 - What happens when search query matches zero games? (Display "No games found" message with suggestion to adjust filters)
@@ -103,6 +121,11 @@ Players can view playtime statistics from muOS tracking and export collections t
 - **FR-025**: System MUST sync "Recently Played" with games launched from muOS History module
 - **FR-026**: System MUST handle text overflow in search bar by scrolling to show recent characters
 - **FR-027**: System MUST enforce minimum keyboard key size to prevent rendering crashes
+- **FR-028**: System MUST provide "Browse by Platform" system collection to organize games by gaming platform
+- **FR-029**: System MUST detect all unique platforms/systems in game library automatically
+- **FR-030**: System MUST display platform list with game counts (e.g., "GB (42 games)", "PSP (15 games)")
+- **FR-031**: System MUST support hierarchical navigation (platforms list → platform's games → back to platforms)
+- **FR-032**: System MUST filter platforms with zero games from the platform browser
 
 ### Key Entities
 

@@ -206,6 +206,25 @@
 
 ---
 
+## Phase O: Browse by Platform Feature (User Story 4)
+
+**Purpose**: Add platform/system browsing capability for organized game discovery
+
+- [ ] T098 [P] [US4] Create PlatformBrowserScene in src/scenes/platform_browser_scene.lua
+- [ ] T099 [US4] Add "Browse by Platform" system collection to CollectionManager
+- [ ] T100 [US4] Implement GameLibrary.get_platforms() to extract unique systems with counts
+- [ ] T101 [US4] Implement PlatformBrowserScene platform list view with game counts
+- [ ] T102 [US4] Implement platform selection to navigate to BrowseScene with filtered games
+- [ ] T103 [US4] Add back navigation from platform games to platform list
+- [ ] T104 [US4] Filter out platforms with zero games from display
+- [ ] T105 [US4] Add platform icons/labels (GB, GBA, NES, SNES, PSP, etc.)
+- [ ] T106 [US4] Update MenuScene to include "Browse by Platform" collection
+- [ ] T107 [US4] Test platform browsing with multi-system library (5+ systems)
+
+**Checkpoint**: Platform browsing complete - test navigating GB → games → back to platforms
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
