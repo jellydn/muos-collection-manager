@@ -152,6 +152,9 @@ function CreateCollectionScene.handle_action(action)
             elseif key == "CAPS" then
                 -- Toggle shift mode
                 CreateCollectionScene.keyboard:toggle_shift()
+            elseif key == "SPACE" then
+                -- Add space character
+                CreateCollectionScene.name_input:add_char(" ")
             else
                 CreateCollectionScene.name_input:add_char(key)
             end
