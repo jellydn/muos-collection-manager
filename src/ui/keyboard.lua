@@ -12,14 +12,16 @@ local LAYOUT_LOWERCASE = {
     {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
     {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
-    {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"}
+    {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"},
+    {"SPACE"}
 }
 
 local LAYOUT_UPPERCASE = {
     {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"},
     {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
     {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
-    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "?", "DEL"}
+    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "?", "DEL"},
+    {"SPACE"}
 }
 
 -- Create a new OnScreenKeyboard
@@ -103,7 +105,6 @@ function OnScreenKeyboard:draw()
             end
 
             local label = key
-            -- No need for SPACE label since we removed space key
 
             local font = love.graphics.getFont()
             local text_width = font:getWidth(label)

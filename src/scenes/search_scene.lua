@@ -274,6 +274,9 @@ function SearchScene.handle_action(action)
             elseif key == "CAPS" then
                 -- Toggle shift mode
                 SearchScene.keyboard:toggle_shift()
+            elseif key == "SPACE" then
+                -- Add space character
+                SearchScene.search_bar:add_char(" ")
             else
                 SearchScene.search_bar:add_char(key)
             end
