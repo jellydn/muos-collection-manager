@@ -14,10 +14,7 @@ local PlatformBrowserScene = {}
 PlatformBrowserScene.platforms = {}
 PlatformBrowserScene.selected_index = 1
 PlatformBrowserScene.scroll_offset = 0
-
--- Visual constants
-local ITEM_HEIGHT = 40
-local ITEMS_PER_PAGE = 10
+PlatformBrowserScene.item_height = 50  -- Match MenuScene item height
 
 function PlatformBrowserScene.enter(data)
     Logger.info("Entering PlatformBrowserScene")
@@ -37,9 +34,9 @@ end
 function PlatformBrowserScene.update(dt)
     -- Keep selected item in view (smooth scrolling like MenuScene)
     local viewport_height = DisplayConfig.height - 150  -- Account for header and footer
-    local target_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
+    local target_y = (PlatformBrowserScene.selected_index - 1) * PlatformBrowserScene.item_height
     
-    local min_scroll = target_y - viewport_height + ITEM_HEIGHT
+    local min_scroll = target_y - viewport_height + PlatformBrowserScene.item_height
     local max_scroll = target_y
     
     if PlatformBrowserScene.scroll_offset < min_scroll then
@@ -49,50 +46,68 @@ function PlatformBrowserScene.update(dt)
     end
     
     -- Clamp scroll
-    local max_offset = math.max(0, #PlatformBrowserScene.platforms * ITEM_HEIGHT - viewport_height)
+    local max_offset = math.max(0, #PlatformBrowserScene.platforms * PlatformBrowserScene.item_height - viewport_height)
     PlatformBrowserScene.scroll_offset = math.max(0, math.min(max_offset, PlatformBrowserScene.scroll_offset))
 end
 
 function PlatformBrowserScene.draw()
-    local font = love.graphics.getFont()
     local screen_w = DisplayConfig.width
     local screen_h = DisplayConfig.height
     
-    -- Header
-    love.graphics.setColor(0.2, 0.2, 0.2)
-    love.graphics.rectangle("fill", 0, 0, screen_w, 60)
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.printf("Browse by Platform", 0, 20, screen_w, "center")
+    -- Draw title (matching MenuScene style)
+    love.graphics.setColor(DisplayConfig.COLORS.text)
+    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_large))
+    love.graphics.print("Browse by Platform", DisplayConfig.SIZES.margin, DisplayConfig.SIZES.margin)
+    love.graphics.setFont(love.graphics.newFont(DisplayConfig.SIZES.font_size_medium))
     
     -- Platform list with virtual rendering (viewport culling for performance)
-    local y_offset = 80
+    local start_y = DisplayConfig.SIZES.margin + 40
+    local margin = DisplayConfig.SIZES.margin
+    local width = screen_w - margin * 2
+    
+    love.graphics.setScissor(margin, start_y, width, screen_h - start_y - 60)
     
     -- Calculate visible range based on scroll position
-    local visible_start = math.max(1, math.floor(PlatformBrowserScene.scroll_offset / ITEM_HEIGHT))
+    local visible_start = math.max(1, math.floor(PlatformBrowserScene.scroll_offset / PlatformBrowserScene.item_height))
     local visible_end = math.min(#PlatformBrowserScene.platforms, 
-                                 math.ceil((PlatformBrowserScene.scroll_offset + screen_h - 140) / ITEM_HEIGHT) + 1)
+                                 math.ceil((PlatformBrowserScene.scroll_offset + screen_h - 140) / PlatformBrowserScene.item_height) + 1)
     
     -- Only render visible items (virtual list for performance with 100+ platforms)
     for i = visible_start, visible_end do
         local platform = PlatformBrowserScene.platforms[i]
-        local y = y_offset + ((i - 1) * ITEM_HEIGHT) - PlatformBrowserScene.scroll_offset
+        local y = start_y + (i - 1) * PlatformBrowserScene.item_height - PlatformBrowserScene.scroll_offset
+        local is_selected = (i == PlatformBrowserScene.selected_index)
         
-        -- Selection highlight
-        if i == PlatformBrowserScene.selected_index then
-            love.graphics.setColor(0.3, 0.5, 0.8)
-            love.graphics.rectangle("fill", 20, y, screen_w - 40, ITEM_HEIGHT - 5)
+        -- Draw background
+        if is_selected then
+            love.graphics.setColor(DisplayConfig.COLORS.primary)
+        else
+            love.graphics.setColor(DisplayConfig.COLORS.surface)
         end
+        love.graphics.rectangle("fill", margin, y, width, PlatformBrowserScene.item_height - 4, 4, 4)
+        
+        -- Draw border
+        love.graphics.setColor(DisplayConfig.COLORS.secondary)
+        love.graphics.rectangle("line", margin, y, width, PlatformBrowserScene.item_height - 4, 4, 4)
         
         -- Platform name and count
-        love.graphics.setColor(1, 1, 1)
+        if is_selected then
+            love.graphics.setColor(DisplayConfig.COLORS.background)
+        else
+            love.graphics.setColor(DisplayConfig.COLORS.text)
+        end
+        
         local text = string.format("%s (%d games)", platform.display_name, platform.count)
-        love.graphics.print(text, 30, y + 10)
+        love.graphics.print(text, margin + 10, y + 12)
     end
     
-    -- Footer instructions
-    love.graphics.setColor(0.5, 0.5, 0.5)
-    local footer_y = screen_h - 30
-    love.graphics.printf("A: Select  |  B: Back", 0, footer_y, screen_w, "center")
+    love.graphics.setScissor()
+    
+    -- Draw help text (matching MenuScene footer)
+    love.graphics.setColor(DisplayConfig.COLORS.text_dim)
+    local help_y = screen_h - DisplayConfig.SIZES.font_size_small - DisplayConfig.SIZES.margin
+    love.graphics.print("A: Browse | B: Back", DisplayConfig.SIZES.margin, help_y)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function PlatformBrowserScene.keypressed(key, scancode, isrepeat)
