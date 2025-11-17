@@ -4,7 +4,9 @@
 
 local Logger = require("src.lib.logger")
 local DisplayConfig = require("src.config.display_config")
+local InputHandler = require("src.ui.input_handler")
 local GameLibrary = require("src.services.game_library")
+local SceneManager = require("src.scenes.scene_manager")
 
 local PlatformBrowserScene = {}
 
@@ -82,9 +84,37 @@ function PlatformBrowserScene.draw()
     end
 end
 
-function PlatformBrowserScene.keypressed(key)
+function PlatformBrowserScene.keypressed(key, scancode, isrepeat)
+    local action = InputHandler.keypressed(key, scancode, isrepeat)
+    if action then
+        PlatformBrowserScene.handle_action(action)
+    end
+end
+
+function PlatformBrowserScene.gamepadpressed(joystick, button)
+    local action = InputHandler.gamepadpressed(joystick, button)
+    if action then
+        PlatformBrowserScene.handle_action(action)
+    end
+end
+
+function PlatformBrowserScene.handle_action(action)
     -- Navigation
-    if key == "down" or key == "s" then
+    if action == "up" then
+        if PlatformBrowserScene.selected_index > 1 then
+            PlatformBrowserScene.selected_index = PlatformBrowserScene.selected_index - 1
+            
+            -- Auto-scroll
+            local item_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
+            
+            if item_y < PlatformBrowserScene.scroll_offset then
+                PlatformBrowserScene.scroll_offset = item_y
+            end
+            
+            Logger.info("Platform selection moved UP to:", PlatformBrowserScene.selected_index, "/", #PlatformBrowserScene.platforms)
+        end
+        
+    elseif action == "down" then
         if PlatformBrowserScene.selected_index < #PlatformBrowserScene.platforms then
             PlatformBrowserScene.selected_index = PlatformBrowserScene.selected_index + 1
             
@@ -100,27 +130,12 @@ function PlatformBrowserScene.keypressed(key)
             Logger.info("Platform selection moved DOWN to:", PlatformBrowserScene.selected_index, "/", #PlatformBrowserScene.platforms)
         end
         
-    elseif key == "up" or key == "w" then
-        if PlatformBrowserScene.selected_index > 1 then
-            PlatformBrowserScene.selected_index = PlatformBrowserScene.selected_index - 1
-            
-            -- Auto-scroll
-            local item_y = (PlatformBrowserScene.selected_index - 1) * ITEM_HEIGHT
-            
-            if item_y < PlatformBrowserScene.scroll_offset then
-                PlatformBrowserScene.scroll_offset = item_y
-            end
-            
-            Logger.info("Platform selection moved UP to:", PlatformBrowserScene.selected_index, "/", #PlatformBrowserScene.platforms)
-        end
-        
-    elseif key == "return" or key == "space" then
+    elseif action == "confirm" then
         -- Select platform - navigate to browse scene with filtered games
         if PlatformBrowserScene.platforms[PlatformBrowserScene.selected_index] then
             local selected_platform = PlatformBrowserScene.platforms[PlatformBrowserScene.selected_index]
             Logger.info("Opening platform:", selected_platform.display_name, "(" .. selected_platform.system .. ")")
             
-            local SceneManager = require("src.scenes.scene_manager")
             SceneManager.switch("browse", {
                 collection = {
                     name = selected_platform.display_name,
@@ -130,23 +145,9 @@ function PlatformBrowserScene.keypressed(key)
             })
         end
         
-    elseif key == "escape" or key == "backspace" then
+    elseif action == "cancel" then
         -- Back to menu
-        local SceneManager = require("src.scenes.scene_manager")
         SceneManager.switch("menu")
-    end
-end
-
-function PlatformBrowserScene:gamepadpressed(joystick, button)
-    -- Map gamepad buttons to keyboard equivalents
-    if button == "dpdown" then
-        PlatformBrowserScene.keypressed("down")
-    elseif button == "dpup" then
-        PlatformBrowserScene.keypressed("up")
-    elseif button == "a" then
-        PlatformBrowserScene.keypressed("return")
-    elseif button == "b" then
-        PlatformBrowserScene.keypressed("escape")
     end
 end
 
