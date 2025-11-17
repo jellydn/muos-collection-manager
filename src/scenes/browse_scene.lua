@@ -282,17 +282,7 @@ function BrowseScene.handle_action(action)
         local selected = BrowseScene.game_grid and BrowseScene.game_grid:get_selected()
         if selected then
             Logger.info("A pressed - opening info panel for:", selected.title)
-            -- Enrich game with muOS tracking data once when opening
-            Logger.info("About to enrich game...")
-            local MuOSTracker = require("src.services.muos_tracker")
-            local ok, enriched = pcall(MuOSTracker.enrich_game, selected)
-            if ok then
-                Logger.info("Enrichment successful")
-                BrowseScene.info_panel_game = enriched
-            else
-                Logger.error("Enrichment failed:", enriched)
-                BrowseScene.info_panel_game = selected
-            end
+            BrowseScene.info_panel_game = selected
             BrowseScene.show_info_panel = true
         end
 
