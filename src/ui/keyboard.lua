@@ -11,17 +11,17 @@ OnScreenKeyboard.__index = OnScreenKeyboard
 local LAYOUT_LOWERCASE = {
     {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
     {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
-    {"a", "s", "d", "f", "g", "h", "j", "k", "l"},
-    {"CAPS", "z", "x", "c", "v", "b", "n", "m", "DEL"},
-    {"-", ".", "SPACE", ",", "?"}
+    {"a", "s", "d", "f", "g", "h", "j", "k", "l", "-"},
+    {"CAPS", "z", "x", "c", "v", "b", "n", "m", ".", "DEL"},
+    {"@", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", ",", "?", "DEL"}
 }
 
 local LAYOUT_UPPERCASE = {
-    {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+    {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"},
     {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
-    {"A", "S", "D", "F", "G", "H", "J", "K", "L"},
-    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", "DEL"},
-    {"_", "!", "SPACE", "@", "#"}
+    {"A", "S", "D", "F", "G", "H", "J", "K", "L", "_"},
+    {"CAPS", "Z", "X", "C", "V", "B", "N", "M", ".", "DEL"},
+    {"@", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", ",", "?", "DEL"}
 }
 
 -- Create a new OnScreenKeyboard
@@ -77,12 +77,41 @@ function OnScreenKeyboard:draw()
 
     -- Draw keys
     for row = 1, self.rows do
-        for col = 1, #self.layout[row] do
+        local col = 1
+        while col <= #self.layout[row] do
             local key_x = self.x + 4 + (col - 1) * (self.key_width + 4)
             local key_y = self.y + 4 + (row - 1) * (self.key_height + 4)
 
             local key = self.layout[row][col]
-            local is_selected = (row == self.selected_row and col == self.selected_col)
+
+            -- Check if this is a SPACE key and count consecutive SPACE keys
+            local space_count = 0
+            if key == "SPACE" then
+                local check_col = col
+                while check_col <= #self.layout[row] and self.layout[row][check_col] == "SPACE" do
+                    space_count = space_count + 1
+                    check_col = check_col + 1
+                end
+            end
+
+            -- Check if any SPACE position in the span is selected
+            local is_selected = false
+            if space_count > 0 then
+                for i = col, col + space_count - 1 do
+                    if row == self.selected_row and i == self.selected_col then
+                        is_selected = true
+                        break
+                    end
+                end
+            else
+                is_selected = (row == self.selected_row and col == self.selected_col)
+            end
+
+            -- Calculate key width (SPACE bar spans multiple keys)
+            local draw_width = self.key_width
+            if space_count > 0 then
+                draw_width = space_count * self.key_width + (space_count - 1) * 4
+            end
 
             -- Draw key background
             if is_selected then
@@ -90,12 +119,12 @@ function OnScreenKeyboard:draw()
             else
                 love.graphics.setColor(DisplayConfig.COLORS.background)
             end
-            love.graphics.rectangle("fill", key_x, key_y, self.key_width, self.key_height, 4, 4)
+            love.graphics.rectangle("fill", key_x, key_y, draw_width, self.key_height, 4, 4)
 
             -- Draw key border
             love.graphics.setColor(DisplayConfig.COLORS.secondary)
             love.graphics.setLineWidth(1)
-            love.graphics.rectangle("line", key_x, key_y, self.key_width, self.key_height, 4, 4)
+            love.graphics.rectangle("line", key_x, key_y, draw_width, self.key_height, 4, 4)
 
             -- Draw key label
             if is_selected then
@@ -111,15 +140,22 @@ function OnScreenKeyboard:draw()
             local text_height = font:getHeight()
 
             -- Ensure text fits within key bounds (clamp position to prevent overflow)
-            local text_x = key_x + math.max(0, (self.key_width - text_width) / 2)
+            local text_x = key_x + math.max(0, (draw_width - text_width) / 2)
             local text_y = key_y + math.max(0, (self.key_height - text_height) / 2)
 
             -- Only draw if text will fit reasonably within the key
-            if text_width <= self.key_width + 2 and text_height <= self.key_height + 2 then
+            if text_width <= draw_width + 2 and text_height <= self.key_height + 2 then
                 love.graphics.print(label, text_x, text_y)
             else
                 -- Text too large, draw a placeholder
-                love.graphics.print("•", key_x + self.key_width / 2 - 2, key_y + self.key_height / 2 - font:getHeight() / 2)
+                love.graphics.print("•", key_x + draw_width / 2 - 2, key_y + self.key_height / 2 - font:getHeight() / 2)
+            end
+
+            -- Skip the remaining SPACE keys if we drew a wide SPACE bar
+            if space_count > 0 then
+                col = col + space_count
+            else
+                col = col + 1
             end
         end
     end
@@ -140,11 +176,30 @@ function OnScreenKeyboard:move_down()
 end
 
 function OnScreenKeyboard:move_left()
-    self.selected_col = math.max(1, self.selected_col - 1)
+    local new_col = math.max(1, self.selected_col - 1)
+
+    -- If we land on a SPACE, move to the first SPACE in the group
+    if self.layout[self.selected_row][new_col] == "SPACE" then
+        while new_col > 1 and self.layout[self.selected_row][new_col - 1] == "SPACE" do
+            new_col = new_col - 1
+        end
+    end
+
+    self.selected_col = new_col
 end
 
 function OnScreenKeyboard:move_right()
-    self.selected_col = math.min(#self.layout[self.selected_row], self.selected_col + 1)
+    local new_col = math.min(#self.layout[self.selected_row], self.selected_col + 1)
+
+    -- If we're on a SPACE and moving right, skip to after all SPACE keys
+    if self.layout[self.selected_row][self.selected_col] == "SPACE" then
+        while new_col <= #self.layout[self.selected_row] and self.layout[self.selected_row][new_col] == "SPACE" do
+            new_col = new_col + 1
+        end
+        new_col = math.min(#self.layout[self.selected_row], new_col)
+    end
+
+    self.selected_col = new_col
 end
 
 -- Clamp selection to valid key in current row
@@ -152,6 +207,13 @@ function OnScreenKeyboard:clamp_selection()
     local max_col = #self.layout[self.selected_row]
     if self.selected_col > max_col then
         self.selected_col = max_col
+    end
+
+    -- If we land on a SPACE (not the first one), move to the first SPACE
+    if self.layout[self.selected_row][self.selected_col] == "SPACE" then
+        while self.selected_col > 1 and self.layout[self.selected_row][self.selected_col - 1] == "SPACE" do
+            self.selected_col = self.selected_col - 1
+        end
     end
 end
 
