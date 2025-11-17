@@ -12,7 +12,6 @@ local CollectionManager = {}
 CollectionManager.collections = {}  -- Array of Collection objects
 CollectionManager.collections_by_id = {}  -- Map of id → Collection for fast lookup
 CollectionManager.collections_file = nil  -- Will be set during init
-CollectionManager.history_cache = nil  -- Cache for muOS history (read once)
 
 -- Helper to count map size
 function CollectionManager.count_map_size(map)
@@ -333,92 +332,6 @@ end
 function CollectionManager.is_system_collection(collection_id)
     local collection = CollectionManager.collections_by_id[collection_id]
     return collection and collection.is_system or false
-end
-
--- Read muOS history to get recently played games
--- Returns array of game ROM paths sorted by most recent first
--- @return table: Array of {path, system, title, timestamp}
-function CollectionManager.read_muos_history()
-    -- Return cached history if available
-    if CollectionManager.history_cache then
-        Logger.info("Returning cached muOS history (", #CollectionManager.history_cache, "entries)")
-        return CollectionManager.history_cache
-    end
-
-    Logger.info("read_muos_history: Starting (no cache)...")
-    local history_dir = "/mnt/mmc/MUOS/info/history"
-    local history_entries = {}
-
-    Logger.info("read_muos_history: Checking if directory exists...")
-    -- Check if history directory exists
-    local check_dir = io.popen(string.format('test -d "%s" && echo "exists"', history_dir))
-    local exists = check_dir:read("*a"):match("exists")
-    check_dir:close()
-    Logger.info("read_muos_history: Directory exists:", exists and "yes" or "no")
-
-    if not exists then
-        Logger.warn("muOS history directory not found:", history_dir)
-        return {}
-    end
-
-    Logger.info("read_muos_history: Listing .cfg files...")
-    -- List all .cfg files in history directory, sorted by modification time (newest first)
-    local ls_cmd = string.format('ls -1t "%s"/*.cfg 2>/dev/null', history_dir)
-    local handle = io.popen(ls_cmd)
-    if not handle then
-        Logger.error("Failed to read history directory")
-        return {}
-    end
-    Logger.info("read_muos_history: ls command completed, reading files...")
-
-    local file_count = 0
-    for cfg_file in handle:lines() do
-        file_count = file_count + 1
-        if file_count % 10 == 0 then
-            Logger.info("read_muos_history: Processing file", file_count, "...")
-        end
-
-        -- Read the .cfg file (3 lines: path, system, title)
-        local cfg = io.open(cfg_file, "r")
-        if cfg then
-            local rom_path = cfg:read("*line")
-            local system = cfg:read("*line")
-            local title = cfg:read("*line")
-            cfg:close()
-            
-            if rom_path and system and title then
-                -- Convert /mnt/union/ROMS to /mnt/mmc/ROMS to match Game Library
-                local local_path = rom_path:gsub("^/mnt/union/ROMS", "/mnt/mmc/ROMS")
-                
-                -- Get file modification time as timestamp
-                local stat_cmd = string.format('stat -c %%Y "%s" 2>/dev/null', cfg_file)
-                local stat_handle = io.popen(stat_cmd)
-                local timestamp = tonumber(stat_handle:read("*a")) or 0
-                stat_handle:close()
-                
-                table.insert(history_entries, {
-                    path = local_path,
-                    system = system,
-                    title = title,
-                    timestamp = timestamp
-                })
-            end
-        end
-        
-        -- Limit to 50 most recent games for performance
-        if file_count >= 50 then
-            break
-        end
-    end
-    handle:close()
-
-    Logger.info("Read", #history_entries, "entries from muOS history")
-
-    -- Cache the result
-    CollectionManager.history_cache = history_entries
-    Logger.info("Cached muOS history for future use")
-
-    return history_entries
 end
 
 -- Load existing collections from muOS collection directory
