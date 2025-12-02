@@ -242,7 +242,9 @@ function Paths.detect_system_from_path(file_path)
         elseif parent_upper:find("^MD$") then detected_system = "genesis"
         elseif parent_upper:find("MASTER.*SYSTEM") or parent_upper:find("^MS$") then detected_system = "mastersystem"
         elseif parent_upper:find("GAME.*GEAR") or parent_upper:find("^GG$") then detected_system = "gamegear"
-        elseif parent_upper:find("SEGACD") or parent_upper:find("SEGA.*CD") then detected_system = "segacd"
+        elseif parent_upper:find("SEGACD") or parent_upper:find("SEGA.*CD") or parent_upper:find("MEGA.*CD") then detected_system = "segacd"
+        -- Bandai
+        elseif parent_upper:find("WONDERSWAN") or parent_upper:find("WSC") then detected_system = "wonderswan"
         -- Arcade
         elseif parent_upper:find("ARCADE") or parent_upper:find("MAME") or parent_upper:find("FBA") or parent_upper:find("FBNEO") then detected_system = "arcade"
         -- Ports

@@ -320,6 +320,10 @@ function GameLibrary.get_platforms()
         gg = "Sega Game Gear",
         dreamcast = "Sega Dreamcast",
         dc = "Sega Dreamcast",
+        segacd = "Sega Mega CD - Sega CD",
+        -- Bandai
+        wonderswan = "Bandai WonderSwan-Color",
+        wsc = "Bandai WonderSwan-Color",
         -- Arcade
         arcade = "Arcade",
         fbneo = "Arcade",
