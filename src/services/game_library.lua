@@ -10,6 +10,7 @@ local GameLibrary = {}
 -- Library state
 GameLibrary.games = {}
 GameLibrary.is_loaded = false
+GameLibrary.platform_names = nil  -- Loaded from config file
 
 -- Parse game metadata from filename
 -- Examples:
@@ -277,24 +278,33 @@ function GameLibrary.get_by_system(system)
     return results
 end
 
--- Get all platforms/systems with game counts
--- Returns array of {system, count, display_name} sorted by display name
-function GameLibrary.get_platforms()
-    local platforms = {}
-    local system_counts = {}
-    
-    -- Count games per system
-    for _, game in ipairs(GameLibrary.games) do
-        local sys = game.system
-        if sys then
-            system_counts[sys] = (system_counts[sys] or 0) + 1
+-- Load platform names from config file
+-- Returns table of system -> display_name mappings
+local function load_platform_config()
+    -- Try to load from config file
+    local config_path = "platform_config.json"
+    local config_file = io.open(config_path, "r")
+
+    if config_file then
+        local content = config_file:read("*all")
+        config_file:close()
+
+        -- Parse JSON
+        local success, config = pcall(function()
+            return require("src.lib.json").decode(content)
+        end)
+
+        if success and config and config.platform_names then
+            Logger.info("Loaded platform names from", config_path)
+            return config.platform_names
+        else
+            Logger.warn("Failed to parse platform_config.json, using defaults")
         end
     end
-    
-    -- Convert to array with display names
-    -- MUST match muOS catalogue folder names from /mnt/mmc/MUOS/info/catalogue/
-    -- These match the catalogue= values in MUOS/info/assign/<system>/global.ini
-    local system_names = {
+
+    -- Fallback to default mappings
+    Logger.info("Using default platform name mappings")
+    return {
         -- Nintendo
         nes = "Nintendo NES - Famicom",
         fc = "Nintendo NES - Famicom",
@@ -338,7 +348,29 @@ function GameLibrary.get_platforms()
         pico8 = "PICO-8",
         ports = "Ports"
     }
-    
+end
+
+-- Get all platforms/systems with game counts
+-- Returns array of {system, count, display_name} sorted by display name
+function GameLibrary.get_platforms()
+    local platforms = {}
+    local system_counts = {}
+
+    -- Count games per system
+    for _, game in ipairs(GameLibrary.games) do
+        local sys = game.system
+        if sys then
+            system_counts[sys] = (system_counts[sys] or 0) + 1
+        end
+    end
+
+    -- Load platform names from config (once)
+    if not GameLibrary.platform_names then
+        GameLibrary.platform_names = load_platform_config()
+    end
+
+    local system_names = GameLibrary.platform_names
+
     for system, count in pairs(system_counts) do
         if count > 0 then
             table.insert(platforms, {
