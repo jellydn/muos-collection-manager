@@ -223,16 +223,17 @@ function Paths.detect_system_from_path(file_path)
         if Paths.rom_extensions[parent_upper] then
             detected_system = parent_upper:lower()
         -- Check partial matches for common naming patterns
-        -- Nintendo Systems
+        -- Nintendo Systems (order matters: specific patterns before generic!)
         elseif parent_upper:find("SNES") or parent_upper:find("SUPER.*FAMICOM") or parent_upper:find("SUPER.*NINTENDO") then detected_system = "snes"
         elseif parent_upper:find("SFC") then detected_system = "snes"
         elseif parent_upper:find("NES") or parent_upper:find("FAMICOM") then detected_system = "nes"
         elseif parent_upper:find("^FC$") then detected_system = "nes"
-        elseif parent_upper:find("GBA") or parent_upper:find("GAMEBOY.*ADVANCE") then detected_system = "gba"
-        elseif parent_upper:find("GBC") or parent_upper:find("GAMEBOY.*COLOR") then detected_system = "gbc"
-        elseif parent_upper:find("GB") or parent_upper:find("GAMEBOY") then detected_system = "gb"
+        -- Game Boy variants: Check Advance and Color BEFORE plain Game Boy!
+        elseif parent_upper:find("GAME.*BOY.*ADVANCE") or parent_upper:find("GBA") then detected_system = "gba"
+        elseif parent_upper:find("GAME.*BOY.*COLOR") or parent_upper:find("GBC") then detected_system = "gbc"
+        elseif parent_upper:find("GAME.*BOY") or parent_upper:find("^GB$") then detected_system = "gb"
         elseif parent_upper:find("N64") or parent_upper:find("NINTENDO.*64") then detected_system = "n64"
-        elseif parent_upper:find("NDS") or parent_upper:find("NINTENDO.*DS") or parent_upper:find("DS") then detected_system = "nds"
+        elseif parent_upper:find("NINTENDO.*DS") or parent_upper:find("NDS") then detected_system = "nds"
         -- Sony Systems (PSP must come before PS1!)
         elseif parent_upper:find("PSP") then detected_system = "psp"
         elseif parent_upper:find("PS1") or parent_upper:find("PSX") or parent_upper:find("^PS$") or parent_upper:find("PLAYSTATION") then detected_system = "ps1"

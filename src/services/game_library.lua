@@ -306,10 +306,10 @@ function GameLibrary.get_platforms()
         n64 = "Nintendo N64",
         nds = "Nintendo DS",
         -- Sony
-        ps1 = "Sony PlayStation",
-        ps = "Sony PlayStation",
-        psx = "Sony PlayStation",
-        psp = "Sony PlayStation Portable",
+        ps1 = "Sony Playstation",
+        ps = "Sony Playstation",
+        psx = "Sony Playstation",
+        psp = "Sony Playstation Portable",
         -- Sega
         genesis = "Sega Mega Drive-Genesis",
         md = "Sega Mega Drive-Genesis",
