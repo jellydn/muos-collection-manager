@@ -4,6 +4,7 @@
 local Logger = require("src.lib.logger")
 local Paths = require("src.config.paths")
 local Game = require("src.models.game")
+local GenreDetector = require("src.services.genre_detector")
 
 local GameLibrary = {}
 
@@ -49,6 +50,9 @@ local function parse_filename(filename, system)
 
     -- Trim whitespace
     metadata.title = name_without_ext:match("^%s*(.-)%s*$")
+
+    -- Detect genre from title and platform
+    metadata.genre = GenreDetector.detect(metadata.title, system)
 
     return metadata
 end
