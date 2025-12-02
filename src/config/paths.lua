@@ -234,8 +234,8 @@ function Paths.detect_system_from_path(file_path)
         elseif parent_upper:find("GAME.*BOY") or parent_upper:find("^GB$") then detected_system = "gb"
         elseif parent_upper:find("N64") or parent_upper:find("NINTENDO.*64") then detected_system = "n64"
         elseif parent_upper:find("NINTENDO.*DS") or parent_upper:find("NDS") then detected_system = "nds"
-        -- Sony Systems (PSP must come before PS1!)
-        elseif parent_upper:find("PSP") then detected_system = "psp"
+        -- Sony Systems (Portable must come before plain PlayStation!)
+        elseif parent_upper:find("PLAYSTATION.*PORTABLE") or parent_upper:find("PSP") then detected_system = "psp"
         elseif parent_upper:find("PS1") or parent_upper:find("PSX") or parent_upper:find("^PS$") or parent_upper:find("PLAYSTATION") then detected_system = "ps1"
         -- Sega Systems
         elseif parent_upper:find("DREAMCAST") or parent_upper:find("^DC$") then detected_system = "dreamcast"
