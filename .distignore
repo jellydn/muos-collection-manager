@@ -1,0 +1,54 @@
+# muOS Collection Manager Distribution Ignore (rsync --exclude-from)
+
+# VCS and CI
+
+.git/
+.gitignore
+.github/
+
+# Development and specs (exclude from packaged app)
+
+tests/
+specs/
+.specify/
+.vscode/
+.claude/
+.agents/
+doc/
+docs/
+
+# Build artifacts
+
+dist/
+*.zip
+*.muxapp
+.distignore
+
+# Root-only dev files not needed on device
+
+Makefile
+run-test.sh
+scripts/
+
+# Temporary files
+
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# macOS
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails/metadata
+
+.\_\*
+
+# Test data
+
+/tmp/
+*.test.*

@@ -1,0 +1,33 @@
+# Build artifacts
+dist/
+*.muxapp
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# Love2D specific
+*.love
+.love-backup/
+
+# Test data
+test-roms/
+test-data/
+
+# Secrets
+.env
+.env.*
+!.env.example
