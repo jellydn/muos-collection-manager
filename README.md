@@ -132,18 +132,86 @@ The app detects platforms by analyzing your ROM directory structure:
 
 ### Customizing Platform Names
 
-Edit `platform_config.json` in the application root to customize display names:
+Edit `platform_config.json` in the application root to customize display names.
+
+**Example 1: Change Capitalization**
+```json
+{
+  "version": "1.0.0",
+  "platform_names": {
+    "ps1": "Sony PlayStation",
+    "psp": "Sony PlayStation Portable"
+  }
+}
+```
+
+**Example 2: Regional Naming**
+```json
+{
+  "platform_names": {
+    "genesis": "Sega Genesis",
+    "md": "Sega Mega Drive"
+  }
+}
+```
+
+**Example 3: Add New Platform**
+```json
+{
+  "platform_names": {
+    "3ds": "Nintendo 3DS",
+    "wiiu": "Nintendo Wii U",
+    "switch": "Nintendo Switch"
+  }
+}
+```
+
+<details>
+<summary><strong>📋 Full Default Configuration</strong></summary>
 
 ```json
 {
   "version": "1.0.0",
   "platform_names": {
+    "nes": "Nintendo NES - Famicom",
+    "fc": "Nintendo NES - Famicom",
+    "snes": "Nintendo SNES - SFC",
+    "sfc": "Nintendo SNES - SFC",
+    "gb": "Nintendo Game Boy",
+    "gbc": "Nintendo Game Boy Color",
     "gba": "Nintendo Game Boy Advance",
-    "ps1": "Sony PlayStation",
-    "segacd": "Sega Mega CD - Sega CD"
+    "n64": "Nintendo N64",
+    "nds": "Nintendo DS",
+    "ps1": "Sony Playstation",
+    "ps": "Sony Playstation",
+    "psx": "Sony Playstation",
+    "psp": "Sony Playstation Portable",
+    "genesis": "Sega Mega Drive-Genesis",
+    "md": "Sega Mega Drive-Genesis",
+    "mastersystem": "Sega Master System",
+    "ms": "Sega Master System",
+    "sms": "Sega Master System",
+    "gamegear": "Sega Game Gear",
+    "gg": "Sega Game Gear",
+    "dreamcast": "Sega Dreamcast",
+    "dc": "Sega Dreamcast",
+    "segacd": "Sega Mega CD - Sega CD",
+    "wonderswan": "Bandai WonderSwan-Color",
+    "wsc": "Bandai WonderSwan-Color",
+    "arcade": "Arcade",
+    "fbneo": "Arcade",
+    "mame": "Arcade",
+    "fba": "Arcade",
+    "atari2600": "Atari 2600",
+    "atari7800": "Atari 7800",
+    "lynx": "Atari Lynx",
+    "ngp": "SNK Neo Geo Pocket",
+    "pico8": "PICO-8",
+    "ports": "Ports"
   }
 }
 ```
+</details>
 
 **Benefits:**
 - Change capitalization (PlayStation vs Playstation)
