@@ -109,11 +109,60 @@ On first launch, the app will:
 3. Press R to toggle between AND/OR logic
 4. Filters combine with name search automatically
 
+## Platform Configuration
+
+Game Vault automatically detects platforms from your ROM directory names. You can customize how platform names are displayed in the UI.
+
+### Automatic Platform Detection
+
+The app detects platforms by analyzing your ROM directory structure:
+
+```
+/mnt/mmc/ROMS/
+├── Nintendo Game Boy Advance/  → Detected as: gba
+├── Sony Playstation Portable/  → Detected as: psp
+├── Sega Mega CD - Sega CD/     → Detected as: segacd
+└── ...
+```
+
+**Detection is intelligent:**
+- Case-insensitive pattern matching
+- Handles full names ("Nintendo Game Boy Advance") and abbreviations ("GBA")
+- Most specific patterns checked first (e.g., "Game Boy Advance" before "Game Boy")
+
+### Customizing Platform Names
+
+Edit `platform_config.json` in the application root to customize display names:
+
+```json
+{
+  "version": "1.0.0",
+  "platform_names": {
+    "gba": "Nintendo Game Boy Advance",
+    "ps1": "Sony PlayStation",
+    "segacd": "Sega Mega CD - Sega CD"
+  }
+}
+```
+
+**Benefits:**
+- Change capitalization (PlayStation vs Playstation)
+- Regional preferences (Genesis vs Mega Drive)
+- Add new platforms without code changes
+- Match muOS catalogue names for box art compatibility
+
+**📖 Full documentation:** See [PLATFORM_CONFIG.md](PLATFORM_CONFIG.md) for:
+- Complete platform list
+- Detection patterns reference
+- Customization examples
+- Troubleshooting guide
+
 ## File Locations
 
 - **Collections**: `~/.config/muos/collections/collections.json`
 - **Metadata Cache**: `~/.cache/muos-collection-manager/metadata_cache.json`
 - **Settings**: `~/.config/muos/collections/settings.json`
+- **Platform Names**: `platform_config.json` (in application root)
 - **ROM Directories**: `/mnt/mmc/ROMS/<SYSTEM>/`
 
 ## Performance Benchmarks
